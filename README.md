@@ -1,8 +1,18 @@
 # fhswf_AKI_PKI_B45
 Repo fuer die gemeinsame Programmieraufgabe in Python
 
-source venv/bin/activate
-python3 -m streamlit run finance.py
+python3 -m venv venv
+
+Linux/macOS	Bash/Zsh	source venv/bin/activate
+
+Windows	Command Prompt	venv\Scripts\activate
+
+Windows	PowerShell	venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+
+python3 -m streamlit run app.py
+
 
 Ausgabe:
       👋 Welcome to Streamlit!
