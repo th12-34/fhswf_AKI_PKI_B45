@@ -3,66 +3,173 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 
-def show_dashboard():
-    st.title("📈 Interaktives Finanz-Dashboard")
 
-    # Sidebar
-    st.sidebar.header("Einstellungen")
-
-    ticker_liste = ['MSFT', 'AAPL', 'TSLA', 'GOOGL', 'AMZN', 'BTC-USD']
-    ticker_select = st.sidebar.selectbox("Aktie wählen", ticker_liste)
-    ticker_input = st.sidebar.text_input("Oder manuell eingeben", value=ticker_select).upper()
-
-    ticker = ticker_input if ticker_input else ticker_select
-
-    zeitraum_optionen = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', 'max']
-    zeitraum = st.sidebar.selectbox("Zeitraum", zeitraum_optionen, index=5)
-
-    intervall_optionen = ['1h', '1d', '1wk', '1mo']
-    intervall = st.sidebar.selectbox("Intervall", intervall_optionen, index=1)
-
-    if st.sidebar.button("Daten laden"):
-        st.toast(f"Lade Daten für {ticker}...", icon="⏳")
+def load_data(symbol, period, interval):
+    if not symbol:
+        st.session_state["data"] = None
+        return
 
     try:
-        data = yf.download(
-            tickers=ticker, period=zeitraum, interval=intervall, progress=False
-        )
+        data = yf.download(symbol, period=period, interval=interval, progress=False)
 
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0)
 
         if data.empty:
-            st.error("Keine Daten gefunden.")
+            st.error(f"Keine Daten gefunden für {symbol} mit Periode {period} und Intervall {interval}.")
+            st.session_state["data"] = None
             return
 
-        aktueller_preis = data["Close"].iloc[-1]
-        letzter_preis = data["Close"].iloc[-2] if len(data) > 1 else aktueller_preis
-        aenderung = aktueller_preis - letzter_preis
-        prozent = (aenderung / letzter_preis) * 100
+        st.session_state["data"] = data
+        st.session_state["symbol"] = symbol
+        st.session_state["period"] = period
+        st.session_state["interval"] = interval
+        st.success(f"Daten für {symbol} geladen ({period} / {interval}).")
+
+    except Exception as e:
+        st.error(f"Fehler beim Laden der Daten für {symbol}: " + str(e))
+        st.session_state["data"] = None
+
+
+def show_dashboard():
+    
+    query = st.text_input(
+        "Gib Aktien- oder Krypto-Ticker oder Namen ein",
+        placeholder="z. B. apple, bitcoin, AAPL, BTC-USD",
+        key="ticker_query_input"
+    )
+
+    if query:
+        try:
+            if "last_query" not in st.session_state or st.session_state["last_query"] != query:
+                result = yf.Search(query, max_results=10)
+                st.session_state["search_quotes"] = result.quotes
+                st.session_state["last_query"] = query
+
+            quotes = st.session_state["search_quotes"]
+            
+            if quotes:
+                selection_options = []
+                symbol_map = {}
+
+                for quote in quotes:
+                    symbol = quote["symbol"]
+                    name = quote.get("shortname", "N/A")
+                    label = f"{symbol} – {name}"
+                    selection_options.append(label)
+                    symbol_map[label] = symbol
+
+                PLACEHOLDER = "--- Wähle einen Ticker aus der Liste ---"
+                all_options = [PLACEHOLDER] + selection_options
+                
+                selected_label = st.selectbox(
+                    "Vorschläge:",
+                    options=all_options,
+                    index=0,
+                    key="autocomplete_selection",
+                    label_visibility="collapsed"
+                )
+
+                if selected_label != PLACEHOLDER:
+                    selected_symbol_code = symbol_map[selected_label]
+                    
+                    if st.session_state.get("selected_symbol") != selected_symbol_code:
+                        st.session_state["selected_symbol"] = selected_symbol_code
+                        st.session_state["data"] = None
+                        st.rerun()
+
+            else:
+                st.write("Keine Vorschläge gefunden.")
+                st.session_state["selected_symbol"] = None
+
+        except Exception as e:
+            st.write("Fehler bei der Suche:", e)
+            st.session_state["selected_symbol"] = None
+
+
+    selected_symbol = st.session_state.get("selected_symbol")
+
+    if selected_symbol:
+        st.header(f"Daten-Optionen für {selected_symbol}")
+        
+        col_period, col_interval = st.columns(2)
+
+        with col_period:
+            period_options = {
+                "1 Tag (Intraday)": "1d",
+                "5 Tage": "5d",
+                "1 Monat": "1mo",
+                "3 Monate": "3mo",
+                "6 Monate": "6mo",
+                "1 Jahr": "1y",
+                "2 Jahre": "2y",
+                "5 Jahre": "5y",
+                "Maximal": "max"
+            }
+            selected_period_label = st.selectbox(
+                "Periode auswählen:",
+                options=list(period_options.keys()),
+                index=5,
+                key="input_period"
+            )
+            selected_period_code = period_options[selected_period_label]
+
+
+        with col_interval:
+            interval_options = {
+                "1 Stunde (nur 730 Tage)": "1h",
+                "1 Tag": "1d",
+                "1 Woche": "1wk",
+                "1 Monat": "1mo"
+            }
+            selected_interval_label = st.selectbox(
+                "Intervall auswählen:",
+                options=list(interval_options.keys()),
+                index=1,
+                key="input_interval"
+            )
+            selected_interval_code = interval_options[selected_interval_label]
+            
+        
+        needs_reload = False
+        
+        if st.session_state["data"] is None and selected_symbol:
+            needs_reload = True
+        
+        elif st.session_state.get("period") != selected_period_code or \
+             st.session_state.get("interval") != selected_interval_code:
+            needs_reload = True
+
+        if needs_reload:
+            load_data(selected_symbol, selected_period_code, selected_interval_code)
+
+
+    if st.session_state["data"] is not None:
+        data = st.session_state["data"]
+        symbol = st.session_state["symbol"]
+        
+        st.divider()
+
+        st.write(f"### Daten für {symbol}")
+
+        latest = data["Close"].iloc[-1]
+        prev = data["Close"].iloc[-2] if len(data) > 1 else latest
+        diff = latest - prev
+        pct = (diff / prev) * 100 if prev != 0 else 0
 
         c1, c2, c3 = st.columns(3)
-        c1.metric("Schlusskurs", f"{aktueller_preis:,.2f} $", f"{aenderung:.2f} $")
-        c2.metric("Veränderung", f"{prozent:.2f} %")
+        c1.metric("Schlusskurs", f"{latest:,.2f} $", f"{diff:,.2f} $")
+        c2.metric("Veränderung", f"{pct:.2f} %")
         c3.metric("Datenpunkte", len(data))
 
         fig = go.Figure(data=[go.Scatter(
             x=data.index,
             y=data["Close"],
-            mode="lines+markers",
-            marker=dict(size=10),
+            mode="lines",
+            name="Close"
         )])
-
-        fig.update_layout(
-            title=f"{ticker} Schlusskurse",
-            template="plotly_dark",
-            height=600
-        )
-
+        fig.update_layout(title=f"{symbol} Schlusskurse", template="plotly_dark", height=500)
         st.plotly_chart(fig, use_container_width=True)
 
-        with st.expander("Rohdaten anzeigen"):
+        with st.expander("Rohdaten"):
             st.dataframe(data.tail(20))
-
-    except Exception as e:
-        st.error(str(e))

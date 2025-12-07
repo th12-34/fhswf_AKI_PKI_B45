@@ -3,23 +3,40 @@ from register_page import show_register_page
 from dashboard import show_dashboard
 from navbar import render_top_navbar
 
-# 1. Konfiguration der Seite (Titel, Layout, Dark Mode initialisieren)
 st.set_page_config(page_title="Mein Finanz-Dashboard", layout="wide", initial_sidebar_state="expanded")
 
 def main():
-   # Standardseite
+
+    st.title("Finanzen")
+    if "selected_symbol" not in st.session_state:
+        st.session_state["selected_symbol"] = None
+    if "data" not in st.session_state:
+        st.session_state["data"] = None
+
     if "page" not in st.session_state:
+        st.session_state["headerTitel"] = "Finanzübersicht"
         st.session_state.page = "dashboard"
-    # 1. Top-Navigation immer oben rendern
+        st.session_state['show_login_form'] = False
+
+    if "selected_symbol" not in st.session_state:
+        st.session_state["selected_symbol"] = None
+    if "data" not in st.session_state:
+        st.session_state["data"] = None
+
+    
+
+
+    page = st.session_state.page
+    # Haupt-App-Fluss
     render_top_navbar()
 
-    # 2. Routing: welche Seite wird gezeigt?
-    page = st.session_state.page
 
     if page == "dashboard":
         show_dashboard()
-    elif page == "register":
+
+    elif page == "register_page":
         show_register_page()
+    
 
 
 if __name__ == "__main__":

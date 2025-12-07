@@ -12,6 +12,9 @@ def show_register_page():
     bkv = get_useradministration()
 
     st.title("🧾 Registrierung")
+    if st.button("⬅️ Zurück zum Dashboard"):
+        st.session_state.page = "dashboard"
+        st.rerun()
     st.write("Bitte erstelle dir hier ein neues Benutzerkonto:")
 
     username = st.text_input("Benutzername")
@@ -35,12 +38,8 @@ def show_register_page():
                 ok = bkv.add_user(username, email, passwort)
                 if ok:
                     st.success("Konto erfolgreich angelegt! 🎉 Du kannst dich jetzt einloggen.")
-                    benutzer_info = bkv.get_user_by_name(username)
                     st.session_state.page = "dashboard"
-                    st.experimental_rerun()
-
-                    with st.expander("Debug: Angelegter Benutzer (nur Entwicklung)"):
-                        st.json(benutzer_info)
+                    st.rerun()
                 else:
                     st.error("Beim Anlegen des Kontos ist ein Fehler aufgetreten.")
                 

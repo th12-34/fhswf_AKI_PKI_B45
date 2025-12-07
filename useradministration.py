@@ -66,7 +66,6 @@ class UserAdministration:
 
     def verify_login(self, username: str, passwort: str) -> bool:
         passwort_hash = self._hash_passwort(passwort)
-        print(f"Debug: Verifying login for username: {username}, password hash: {passwort_hash}")
         with self._get_connection() as conn:
             cur = conn.cursor()
             cur.execute(
@@ -77,7 +76,6 @@ class UserAdministration:
                 (username, passwort_hash),
             )
             result = cur.fetchone()
-            print(f"Debug: Login verification result: {result}")
             return result is not None
 
     def get_user_by_name(self, username: str) -> Optional[dict]:
