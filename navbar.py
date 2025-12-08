@@ -37,9 +37,19 @@ def render_top_navbar():
 def _render_logged_in_user(user):
     """Render the logged-in user details and logout button."""
     st.markdown(f"**👤 {user['username']}**")
-    if st.button("Logout"):
-        auth.logout()  
-        st.session_state.page = "dashboard" 
+
+    col1, col2 = st.columns(2)
+    with col1:
+        # Neuer Button zur Asset-Seite
+        if st.button("Portfolio / Assets"):
+            st.session_state.page = "add_assets"
+            st.rerun()
+
+    with col2:
+        if st.button("Logout"):
+            auth.logout()
+            st.session_state.page = "dashboard"
+            st.rerun()
 
 
 def _render_login_form():
@@ -49,7 +59,6 @@ def _render_login_form():
         password = st.text_input("Passwort", type="password")  
         submitted = st.form_submit_button("Einloggen")  
 
-
         if submitted:
             user = auth.login(username, password) 
             if user:
@@ -57,4 +66,4 @@ def _render_login_form():
                 st.session_state.page = "dashboard"  
                 st.rerun()
             else:
-                st.error("Ungültige Anmeldedaten")  
+                st.error("Ungültige Anmeldedaten")
