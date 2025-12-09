@@ -4,11 +4,11 @@
 ### Start:
 python3 -m venv pki-env
 
-Linux/macOS Bash/Zsh:	source venv/bin/activate
+Linux/macOS Bash/Zsh:	source pki-env/bin/activate
 
-Windows	Command Prompt:	venv\Scripts\activate
+Windows	Command Prompt:	pki-env\Scripts\activate
 
-Windows	PowerShell:	venv\Scripts\Activate.ps1
+Windows	PowerShell:	pki-env\Scripts\Activate.ps1
 
 pip install -r requirements.txt
 
