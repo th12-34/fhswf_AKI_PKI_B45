@@ -2,6 +2,8 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
+from prognose_analyse import prognose_kurs, news_sentiment
+import matplotlib.pyplot as plt
 
 
 def load_data(symbol, period, interval):
@@ -148,6 +150,8 @@ def show_dashboard():
         data = st.session_state["data"]
         symbol = st.session_state["symbol"]
         
+        print(f'\n\n{data} bulu--------------------------------')
+
         st.divider()
 
         st.write(f"### Daten für {symbol}")
@@ -169,7 +173,69 @@ def show_dashboard():
             name="Close"
         )])
         fig.update_layout(title=f"{symbol} Schlusskurse", template="plotly_dark", height=500)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         with st.expander("Rohdaten"):
             st.dataframe(data.tail(20))
+
+        
+        with st.expander("Prognose und Analyse"):
+            col1, col2 = st.columns(2)
+
+            if st.button("Prognose und Analyse ausführen"):
+                with st.spinner('Prognose und Analyse läuft...'):
+
+                    with col1:
+                        st.subheader("Prognose Kursentwicklung")
+
+                        progdata, predictions, pred_days = prognose_kurs(symbol)
+                    
+                        figProg = go.Figure()
+                        
+                        figProg.add_trace(go.Scatter(
+                                x = progdata.index,
+                                y = progdata[symbol].values,
+                                mode="lines",
+                                name="Historie"))
+    
+                        figProg.add_trace(go.Scatter(
+                                x = pred_days,
+                                y = predictions,
+                                mode="lines",
+                                name="Vorhersage"))
+
+                        figProg.update_layout(
+                            title="Kursentwicklung und Vorhersage",
+                            xaxis_title="Datum",
+                            yaxis_title="Kurs",
+                            legend_title="Legende",
+                            template="plotly_dark",
+                        )
+                        st.plotly_chart(figProg, width='stretch')
+
+                    with col2:
+                        st.subheader("News-basierte Handlungsempfehlung:")
+
+
+                        FirmenName = yf.Ticker(symbol).info.get('longName')
+                        rating = news_sentiment(FirmenName)
+                        if rating == 'Verkaufen':
+                            arrow = '⬇️'
+                        elif rating == 'Halten':
+                            arrow = '➡️'
+                        else:
+                            arrow = '⬆️'
+                    
+                        
+                        st.markdown(
+                            f"""
+                            <div style="text-align: center; margin-top: 50px; font-size: 24px;">
+                                {rating} {arrow}
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                
+                
+
+
+                
