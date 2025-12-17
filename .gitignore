@@ -1,5 +1,7 @@
 pki-env/
 # macOS metadata
 .DS_Store
+__pycache__/
+user.db
 
 
