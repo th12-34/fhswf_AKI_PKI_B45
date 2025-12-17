@@ -1,24 +1,30 @@
-### Verbesserungen
+## Verbesserungen / Erweiterungen
 
-- [ ] Robuster machen; fehlerabfragen
-- [ ] Registrierungen: emailsyntax prüfen
-- [ ] Objektorientiert? statt funktionen aufrufen
-- [ ] Requirements.txt reparieren?
+### Allgemein
+- [ ] Robuster machen; Tests, Fehlerabfragen, Rückmeldungen einbauen
+- [ ] Code umfangreich kommentieren
+- [ ] Objektorientiert? statt Funktionen aufrufen
+- [x] Requirements.txt reparieren?
 - [ ] Performance verbessern
-- [ ] Dashboard grafisch besser strukturieren / UI optimierung
-- [ ] Portfolio is buggy: anzeige ändert sich nicht , wenn man manuell den Kaufpreis eingibt
+
+### Authentifizierung
+- [ ] Registrierungen: Auf Email-Syntax überprüfen
 - [ ] Registrierungspage: copy paste auf dedizierte page und button einfügen
+
+### Aktien Analyse
+- [ ] Dashboard grafisch besser strukturieren / UI optimierung
+
+### Portfolio
+- [ ] Portfolio: Anzeige ändert sich nicht, wenn man den Button "Kaufpreis manuell" auswählt
+- [ ] Button/Funktion: Neues Portfolio Element hinzufügen
+- [ ] Button: Aus Portfolio-Element Ansicht zurück zu Aktien-Ansicht ohne Logout
+- [ ] Im Zeitraum: Sum Gesamtes Kapital + Verlauf in Grafik + %-Veränderung 
+
+### Sentiment-Analyse
 - [ ] Sentimentanalyse: teil der news mit angeben
 Prognose: Linie/Kursziel plotten
-- [ ] Code kommentieren
-- [ ] Button/Funktion: Neues Portfolio Element hinzufügen
-- [ ] Aus Portfolio-Element Ansicht zurück zu Aktien-Ansicht
-- [ ] Portfolio: Gesamt Kapital + Verlauf + %-Veränderung Zeitraum
 
-### Weiterentwicklung:
-- [ ] Testfälle
-
-### Doku:
+## Doku
 - [ ] README
 - [ ] UML
 - [ ] requirements.txt
