@@ -1,10 +1,10 @@
 import streamlit as st
-from useradministration import UserAdministration
+from databaseHandler import DatabaseAdministration
 
 
-def get_useradministration() -> UserAdministration:
+def get_useradministration() -> DatabaseAdministration:
     if "bkv" not in st.session_state:
-        st.session_state.bkv = UserAdministration("user.db")
+        st.session_state.bkv = DatabaseAdministration("user.db")
     return st.session_state.bkv
 
 

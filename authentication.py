@@ -1,12 +1,12 @@
 import os
 import json
-from useradministration import UserAdministration
+from databaseHandler import DatabaseAdministration
 
 AUTH_FILE = "auth.json"
 
 class Authentication:
     def __init__(self):
-        self.user_admin = UserAdministration()
+        self.user_admin = DatabaseAdministration()
 
     def login(self, username, password):
 

@@ -1,8 +1,8 @@
 import streamlit as st
-from register_page import show_register_page
-from dashboard import show_dashboard
+from pages.register_page import show_register_page
+from pages.dashboard import show_dashboard
 from navbar import render_top_navbar
-from portfolio_page import show_add_assets_page   # <-- NEU
+from pages.portfolio_page import show_add_assets_page   
 
 st.set_page_config(page_title="Mein Finanz-Dashboard", layout="wide", initial_sidebar_state="expanded")
 
@@ -29,7 +29,7 @@ def main():
         show_dashboard()
     elif page == "register_page":
         show_register_page()
-    elif page == "add_assets":              # <-- NEU
+    elif page == "add_assets":             
         show_add_assets_page()
 
 

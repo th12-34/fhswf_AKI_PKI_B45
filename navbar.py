@@ -1,6 +1,6 @@
 import streamlit as st
 from authentication import Authentication
-from dashboard import show_dashboard
+from pages.dashboard import show_dashboard
 
 auth = Authentication()
 

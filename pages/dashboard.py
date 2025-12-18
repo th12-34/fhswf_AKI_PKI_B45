@@ -177,14 +177,12 @@ def show_dashboard():
 
         with st.expander("Rohdaten"):
             st.dataframe(data.tail(20))
-
-        
+  
         with st.expander("Prognose und Analyse"):
             col1, col2 = st.columns(2)
 
             if st.button("Prognose und Analyse ausführen"):
-                with st.spinner('Prognose und Analyse läuft...'):
-
+                with st.spinner('Prognose und Analyse läuft...'):                   
                     with col1:
                         st.subheader("Prognose Kursentwicklung")
 

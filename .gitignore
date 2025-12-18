@@ -3,5 +3,7 @@ pki-env/
 .DS_Store
 __pycache__/
 user.db
+pages/__pycache__/
+venv/
 
 

@@ -4,7 +4,7 @@ import hashlib
 from typing import Optional, List, Dict, Any
 
 
-class UserAdministration:
+class DatabaseAdministration:
     def __init__(self, db_path: str = "user.db") -> None:
         self.db_path = db_path
         self._ensure_db()
@@ -180,28 +180,75 @@ class UserAdministration:
         except sqlite3.IntegrityError:
             # user doesn't exist or other FK / unique issue
             return None
+        
+    def delete_portfolio(self, username: str, portfolio_id: int) -> bool:
+        """
+        Deletes a portfolio by its ID for a specific user.
+        Returns True if successful, False if something went wrong.
+        """
+        try:
+            with self._get_connection() as conn:
+                cur = conn.cursor()
+                # We include username to ensure the user owns the portfolio they are deleting
+                cur.execute(
+                    """
+                    DELETE FROM portfolio 
+                    WHERE id = ? AND portfolio_username = ?
+                    """,
+                    (portfolio_id, username),
+                )
+                conn.commit()
+                
+                # Check if a row was actually deleted
+                if cur.rowcount > 0:
+                    return True
+                else:
+                    return False
+                    
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return False
 
-    def get_portfolios_for_user(self, username: str) -> List[Dict[str, Any]]:
+    def get_portfolios_for_user(self, username: str):
         with self._get_connection() as conn:
             cur = conn.cursor()
             cur.execute(
                 """
-                SELECT id, portfolio_name, erstellt_am
-                FROM portfolio
-                WHERE portfolio_username = ?
+                SELECT id, portfolio_name 
+                FROM portfolio 
+                WHERE portfolio_username = ? 
                 ORDER BY id
-                """,
-                (username,),
+                """, 
+                (username,)
             )
             rows = cur.fetchall()
-            return [
-                {
-                    "id": r[0],
-                    "portfolio_name": r[1],
-                    "erstellt_am": r[2],
-                }
-                for r in rows
-            ]
+            
+            # Create a new list for our tuples
+            portfolio_list = []
+            
+            # Loop through rows and create simple (id, name) tuples
+            for row in rows:
+                portfolio_id = row[0]
+                name = row[1]
+                # Put them in a tuple and add to the list
+                portfolio_list.append( (portfolio_id, name) )
+                
+            return portfolio_list
+        
+    def get_portfolio_ids(self, username: str):
+        with self._get_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM portfolio WHERE portfolio_username = ?", (username,))
+            
+            rows = cur.fetchall()
+            
+            id_list = []
+            
+            for row in rows:
+                portfolio_id = row[0]
+                id_list.append(portfolio_id)
+                
+            return id_list
 
     # --------- Asset functions ---------
 
@@ -241,22 +288,14 @@ class UserAdministration:
                 return asset_id
         except sqlite3.IntegrityError:
             return None
-
-
+        
 
     def get_assets_for_portfolio(self, portfolio_id: int) -> List[Dict[str, Any]]:
         with self._get_connection() as conn:
             cur = conn.cursor()
             cur.execute(
                 """
-                SELECT
-                    id,
-                    asset_type,
-                    asset_symbol,
-                    asset_name,
-                    amount,
-                    buy_price,
-                    bought_at
+                SELECT id, asset_type, asset_symbol, asset_name, amount, buy_price, bought_at
                 FROM assets
                 WHERE portfolio_id = ?
                 ORDER BY bought_at
@@ -264,18 +303,30 @@ class UserAdministration:
                 (portfolio_id,),
             )
             rows = cur.fetchall()
-            return [
-                {
-                    "id": r[0],
-                    "asset_type": r[1],
-                    "asset_symbol": r[2],
-                    "asset_name": r[3],
-                    "amount": r[4],
-                    "buy_price": r[5],
-                    "bought_at": r[6],
-                }
-                for r in rows
-            ]
+
+            # 1. Create an empty list to hold all our asset dictionaries
+            all_assets = []
+
+            # 2. Loop through each row the database gave us
+            for r in rows:
+                # 3. Create a separate dictionary for THIS specific asset
+                asset_dict = {}
+                
+                # 4. Fill the dictionary with data from the row
+                asset_dict["portfolio_id"] = r[0]
+                asset_dict["asset_type"] = r[1]
+                asset_dict["asset_symbol"] = r[2]
+                asset_dict["asset_name"] = r[3]
+                asset_dict["amount"] = r[4]
+                asset_dict["buy_price"] = r[5]
+                asset_dict["bought_at"] = r[6]
+
+                # 5. Add this dictionary to our main list
+                all_assets.append(asset_dict)
+
+            # 6. Finally, return the full list of dictionaries
+            return all_assets
+
 
     def delete_asset(self, asset_id: int) -> bool:
         with self._get_connection() as conn:
