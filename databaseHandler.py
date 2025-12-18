@@ -78,7 +78,7 @@ class DatabaseAdministration:
 
     # --------- User functions ---------
 
-    def username_exisist(self, username: str) -> bool:  # keep name as you wrote it
+    def username_exisist(self, username: str) -> bool: 
         with self._get_connection() as conn:
             cur = conn.cursor()
             cur.execute("SELECT 1 FROM users WHERE username = ?", (username,))
@@ -107,7 +107,6 @@ class DatabaseAdministration:
                     (username, email, passwort_hash),
                 )
 
-                # create default portfolio for this user
                 cur.execute(
                     """
                     INSERT INTO portfolio (portfolio_username, portfolio_name)
@@ -119,7 +118,6 @@ class DatabaseAdministration:
                 conn.commit()
             return True
         except sqlite3.IntegrityError:
-            # UNIQUE constraint failed (username or email)
             return False
 
     def verify_login(self, username: str, passwort: str) -> bool:
@@ -178,7 +176,6 @@ class DatabaseAdministration:
                 conn.commit()
                 return portfolio_id
         except sqlite3.IntegrityError:
-            # user doesn't exist or other FK / unique issue
             return None
         
     def delete_portfolio(self, username: str, portfolio_id: int) -> bool:
@@ -189,7 +186,7 @@ class DatabaseAdministration:
         try:
             with self._get_connection() as conn:
                 cur = conn.cursor()
-                # We include username to ensure the user owns the portfolio they are deleting
+               
                 cur.execute(
                     """
                     DELETE FROM portfolio 
@@ -223,14 +220,11 @@ class DatabaseAdministration:
             )
             rows = cur.fetchall()
             
-            # Create a new list for our tuples
             portfolio_list = []
-            
-            # Loop through rows and create simple (id, name) tuples
+    
             for row in rows:
                 portfolio_id = row[0]
                 name = row[1]
-                # Put them in a tuple and add to the list
                 portfolio_list.append( (portfolio_id, name) )
                 
             return portfolio_list
@@ -259,9 +253,9 @@ class DatabaseAdministration:
         asset_symbol: str,
         asset_name: Optional[str],
         amount: float,
-        buy_price: float,          # EUR
+        buy_price: float,          
         bought_at: str,
-        currency: str = "EUR",     # optional; im DB-Feld immer 'EUR'
+        currency: str = "EUR",    
     ) -> Optional[int]:
         try:
             with self._get_connection() as conn:
@@ -304,15 +298,11 @@ class DatabaseAdministration:
             )
             rows = cur.fetchall()
 
-            # 1. Create an empty list to hold all our asset dictionaries
             all_assets = []
 
-            # 2. Loop through each row the database gave us
             for r in rows:
-                # 3. Create a separate dictionary for THIS specific asset
                 asset_dict = {}
-                
-                # 4. Fill the dictionary with data from the row
+
                 asset_dict["portfolio_id"] = r[0]
                 asset_dict["asset_type"] = r[1]
                 asset_dict["asset_symbol"] = r[2]
@@ -321,10 +311,9 @@ class DatabaseAdministration:
                 asset_dict["buy_price"] = r[5]
                 asset_dict["bought_at"] = r[6]
 
-                # 5. Add this dictionary to our main list
+
                 all_assets.append(asset_dict)
 
-            # 6. Finally, return the full list of dictionaries
             return all_assets
 
 

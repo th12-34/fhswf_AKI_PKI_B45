@@ -5,5 +5,5 @@ __pycache__/
 user.db
 pages/__pycache__/
 venv/
-
+auth.json
 

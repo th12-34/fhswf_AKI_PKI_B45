@@ -16,7 +16,7 @@ class Portfolio:
         
         for data in raw_assets:
             new_asset = PortfolioAsset(
-                portfolio_id=data["portfolio_id"], # make sure your dict key matches
+                portfolio_id=data["portfolio_id"],
                 asset_type=data["asset_type"],
                 asset_symbol=data["asset_symbol"],
                 asset_name=data["asset_name"],
@@ -29,6 +29,5 @@ class Portfolio:
     def get_total_value(self) -> float:
         total = 0.0
         for asset in self.assets:
-            # Now we use the method inside PortfolioAsset!
             total = total + asset.get_total_value()
         return total
