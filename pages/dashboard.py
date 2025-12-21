@@ -2,7 +2,7 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
-from prognose_analyse import prognose_kurs, news_sentiment
+from prognose_analyse import prognose_analyse
 import matplotlib.pyplot as plt
 
 
@@ -35,6 +35,7 @@ def load_data(symbol, period, interval):
 
 def show_dashboard():
     
+    prog_ana_data = prognose_analyse()
     query = st.text_input(
         "Gib Aktien- oder Krypto-Ticker oder Namen ein",
         placeholder="z. B. apple, bitcoin, AAPL, BTC-USD",
@@ -175,16 +176,20 @@ def show_dashboard():
 
         with st.expander("Rohdaten"):
             st.dataframe(data.tail(20))
-  
+        
+        # Prognose und Analyse 
         with st.expander("Prognose und Analyse"):
             col1, col2 = st.columns(2)
 
             if st.button("Prognose und Analyse ausführen"):
+                # update data in objekt für prognose und analyse 
+                prog_ana_data.update(symbol)
+
                 with st.spinner('Prognose und Analyse läuft...'):                   
                     with col1:
                         st.subheader("Prognose Kursentwicklung")
 
-                        progdata, predictions, pred_days = prognose_kurs(symbol)
+                        progdata, predictions, pred_days = prog_ana_data.get_prediction()
                     
                         figProg = go.Figure()
                         
@@ -202,7 +207,7 @@ def show_dashboard():
                                 mode="lines",
                                 name="Vorhersage"))
                         
-                        # 7trageskursziel
+                        # 7-tageskursziel
                         figProg.add_trace(go.Scatter(
                                 x = [progdata.index[0], pred_days[-1]],
                                 y = [predictions[-1], predictions[-1]],
@@ -222,23 +227,13 @@ def show_dashboard():
                     with col2:
                         st.subheader("News-basierte Handlungsempfehlung:")
 
-                        # Tickername -> Firmenname
-                        FirmenName = yf.Ticker(symbol).info.get('longName')
-                        # Sentimentanalyse
-                        rating, news = news_sentiment(FirmenName)
-                        # Ergänzung um Pfeilsymbol
-                        if rating == 'Verkaufen':
-                            arrow = '⬇️'
-                        elif rating == 'Halten':
-                            arrow = '➡️'
-                        else:
-                            arrow = '⬆️'
-                    
+                        empfehlung, news = prog_ana_data.get_sentiment()
+                                           
                         # Darstellung Empfehlung
                         st.markdown(
                             f"""
                             <div style="text-align: center; margin-top: 50px; font-size: 24px;">
-                                {rating} {arrow}
+                                {empfehlung}
                             </div>
                             """, unsafe_allow_html=True)
                         # Anzeige der wichtigsten News-Stichwörter
