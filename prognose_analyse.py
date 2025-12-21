@@ -28,12 +28,12 @@ def prognose_kurs(stock_symbol):
     model_fit = model.fit()
     # korrektur des Anfangswertes
     #model_fit.fittedvalues.loc[model_fit.fittedvalues.index[0]] = data.iloc[0]
-    model_fit_fitted = model_fit.fittedvalues.copy()  # nötig um fehlermeldungen zu unterdrücken
-    model_fit_fitted.loc[model_fit_fitted.index[0]] = data.iloc[0]
+    #model_fit_fitted = model_fit.fittedvalues.copy()  # nötig um fehlermeldungen zu unterdrücken
+    #model_fit_fitted.loc[model_fit_fitted.index[0]] = data.iloc[0]
 
     # vorhersage für die nächsten 14 Tage
     predictions = model_fit.forecast(steps=14)
-    # Füge den letzten Wert der Kurse hinzu, um die beiden linien im Plot zu verbinden
+    # Füge den letzten Wert des historischen Kurses zur Vorhersage hinzu, um die beiden linien im Plot zu verbinden
     predictions = [data.iloc[-1].values[0].tolist()] + list(predictions)
     # Zeitvektor für die Vorsage (x-Achse des ploits)
     pred_days = [data.index[-1] + timedelta(days=i) for i in range(0, 15)]
@@ -59,19 +59,28 @@ def news_sentiment(aktienname):
     for i in range(len(news)):
         news_prompt += f"- {news[i]['description']}\n"
 
-    prompt = "Du bist ein erfahrener Profi am Finanzmarkt. Du hast ein feines Gespür für neue Nachrichten und wie diese sich auf die Kursverläufe von Aktien auswirken. Aus einer Reihe von Nachrichten erstellst du eine Empfehlung. Antworte nur mit Verkaufen, Halten oder Kaufen. Beziehe dich auf folgende News:"
-    prompt = f"{prompt} {news_prompt}"
     client = genai.Client(api_key=GEMINI_API_KEY)
+
+    # LLM Abfrage für Handlungsempfehlung
+    prompt = "Du bist ein erfahrener Profi am Finanzmarkt. Du hast ein feines Gespür für neue Nachrichten und wie diese sich auf die Kursverläufe von Aktien auswirken. Aus einer Reihe von Nachrichten erstellst du eine Empfehlung. Antworte nur mit Verkaufen, Halten oder Kaufen. Beziehe dich auf folgende News:"
+    prompt = f"{prompt} {news_prompt}"    
 
     response = client.models.generate_content(
     model="gemini-2.5-flash", contents = prompt
     )
+    empfehlung = response.text
 
-    text = response.text
-    
-    return text
+    # LLM Abfrage um news zu kondensieren
+    prompt = "Reduziere folgende News auf die 10 wichtigsten Stichwörter. Wähle diese so, dass sie den massgeblichen Einfluss auf den Aktienkurs der letzten 48 stunden hatten. Gebe nichts anderes, als diese 10 wörter zurück. Benutze keine anderen Quellen als diesen Prompt. News:"
+    prompt = f"{prompt} {news_prompt}"    
+    response = client.models.generate_content(
+    model="gemini-2.5-flash", contents = prompt
+    )
+    news_reduktion = response.text
 
-data, predictions, pred_days = prognose_kurs('TSLA')
-plot_data(data, predictions, pred_days)
-rating = news_sentiment('apple')
-print(rating)
+    return empfehlung, news_reduktion
+
+#data, predictions, pred_days = prognose_kurs('TSLA')
+#plot_data(data, predictions, pred_days)
+#rating = news_sentiment('apple')
+#print(rating)

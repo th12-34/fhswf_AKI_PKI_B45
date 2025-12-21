@@ -150,8 +150,6 @@ def show_dashboard():
         data = st.session_state["data"]
         symbol = st.session_state["symbol"]
         
-        print(f'\n\n{data} bulu--------------------------------')
-
         st.divider()
 
         st.write(f"### Daten für {symbol}")
@@ -190,18 +188,28 @@ def show_dashboard():
                     
                         figProg = go.Figure()
                         
+                        # historischer Kursverlauf
                         figProg.add_trace(go.Scatter(
                                 x = progdata.index,
                                 y = progdata[symbol].values,
                                 mode="lines",
                                 name="Historie"))
     
+                        # 7-tagesprognose
                         figProg.add_trace(go.Scatter(
                                 x = pred_days,
                                 y = predictions,
                                 mode="lines",
                                 name="Vorhersage"))
-
+                        
+                        # 7trageskursziel
+                        figProg.add_trace(go.Scatter(
+                                x = [progdata.index[0], pred_days[-1]],
+                                y = [predictions[-1], predictions[-1]],
+                                mode="lines",
+                                name="Kursziel"))
+                        
+                     
                         figProg.update_layout(
                             title="Kursentwicklung und Vorhersage",
                             xaxis_title="Datum",
@@ -214,9 +222,11 @@ def show_dashboard():
                     with col2:
                         st.subheader("News-basierte Handlungsempfehlung:")
 
-
+                        # Tickername -> Firmenname
                         FirmenName = yf.Ticker(symbol).info.get('longName')
-                        rating = news_sentiment(FirmenName)
+                        # Sentimentanalyse
+                        rating, news = news_sentiment(FirmenName)
+                        # Ergänzung um Pfeilsymbol
                         if rating == 'Verkaufen':
                             arrow = '⬇️'
                         elif rating == 'Halten':
@@ -224,11 +234,18 @@ def show_dashboard():
                         else:
                             arrow = '⬆️'
                     
-                        
+                        # Darstellung Empfehlung
                         st.markdown(
                             f"""
                             <div style="text-align: center; margin-top: 50px; font-size: 24px;">
                                 {rating} {arrow}
+                            </div>
+                            """, unsafe_allow_html=True)
+                        # Anzeige der wichtigsten News-Stichwörter
+                        st.markdown(
+                            f"""
+                            <div style="text-align: center; margin-top: 50px; font-size: 12px;">
+                                {news}
                             </div>
                             """, unsafe_allow_html=True)
 
