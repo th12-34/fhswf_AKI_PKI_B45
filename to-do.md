@@ -27,7 +27,7 @@
 
 ### Sentiment-Analyse
 
-- [ ] Sentimentanalyse: teil der news mit angeben
+- [x] Sentimentanalyse: teil der news mit angeben
       Prognose: Linie/Kursziel plotten
 
 ## Doku
