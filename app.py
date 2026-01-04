@@ -7,7 +7,20 @@ from pages.portfolio_page import show_add_assets_page
 st.set_page_config(page_title="Mein Finanz-Dashboard", layout="wide", initial_sidebar_state="expanded")
 
 def main():
-
+    # st.markdown passage for hiding streamlit toolbar
+    '''
+    st.markdown(
+    """
+    <style>
+        [data-testid="stToolbar"] {
+            display: none;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
+    '''
+    
     st.title("Finanzen")
     if "selected_symbol" not in st.session_state:
         st.session_state["selected_symbol"] = None
