@@ -97,8 +97,11 @@ class prognose_analyse:
             response = client.models.generate_content(
             model="gemini-2.5-flash", contents = prompt
             )
-            if response.status_code == 200:
-                empfehlung = response.text
+            empfehlung = getattr(response, "text", None)
+            if not empfehlung:
+                empfehlung = 'Google Gemini derzeit nicht erreichbar'
+            #if response.status_code == 200:
+            #    empfehlung = response.text
         except:
             empfehlung = 'Google Gemini derzeit nicht erreichbar'
 
@@ -115,7 +118,7 @@ class prognose_analyse:
         empfehlung = empfehlung + ' ' + arrow
 
         # prompt um news zu kondensieren
-        prompt = "Reduziere folgende News auf die 10 wichtigsten Stichwörter. Wähle diese so, dass sie den massgeblichen Einfluss auf den Aktienkurs der letzten 48 stunden hatten. Gebe nichts anderes, als diese 10 wörter zurück. Benutze keine anderen Quellen als diesen Prompt. News:"
+        prompt = "Reduziere folgende News auf die 10 wichtigsten Stichwörter. Wähle diese so, dass sie den massgeblichen Einfluss auf den Aktienkurs der letzten 48 stunden hatten. Gebe nichts anderes, als diese 10 wörter zurück. Trenne diese durch ein Komma. Benutze keine anderen Quellen als diesen Prompt. News:"
         prompt = f"{prompt} {news_prompt}"
 
         try:
@@ -123,11 +126,15 @@ class prognose_analyse:
             response = client.models.generate_content(
             model="gemini-2.5-flash", contents = prompt
             )
-            if response.status_code == 200:
-                news_reduktion = response.text
+            news_reduktion = getattr(response, "text", None)
+            if not news_reduktion:
+                news_reduktion = 'Google Gemini derzeit nicht erreichbar'
+            #if response.status_code == 200:
+            #    news_reduktion = response.text
         except:
             news_reduktion = 'Google Gemini derzeit nicht erreichbar'
         
+        news_reduktion = news_reduktion.replace(',', '<br>').strip()
 
         # update class attributes
         self.sent_dict['news'] = news
@@ -152,3 +159,20 @@ class prognose_analyse:
         pred_days = self.pred_dict['pred']['Werte']
 
         return pred_data, predictions, pred_days
+    
+
+
+if __name__ == "__main__":
+    # Erstelle eine Instanz der Klasse
+    pa = prognose_analyse()
+
+    # Beispiel-Ticker Apple
+    ticker = "AAPL"  
+
+    # Berechnung der Prognose
+    pa.prognose_kurs(ticker)    
+    pa.news_sentiment(ticker)
+
+    # Konsolenausgabe
+    print(pa.get_prediction())
+    print(pa.get_sentiment())

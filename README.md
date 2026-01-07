@@ -35,6 +35,17 @@ You can now view your Streamlit app in your browser.
 
 Local URL: http://localhost:8501
 
+Beenden mit 'Strg + c' im python prompt
+
 ### Updates
 
 - pip freeze > requirements.txt
+
+
+
+### Teilaufgaben
+- Basti
+- Gregor
+- Max
+- Maxim 
+- Thorben Herfeld: Klasse für Prognose und Analyse + grafische Integration in streamlit; Architektur (anteilig mit Basti)
