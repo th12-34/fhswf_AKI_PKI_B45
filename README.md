@@ -1,6 +1,13 @@
 ## fhswf_AKI_PKI_B45
 #### Repo fuer die gemeinsame Programmieraufgabe in Python
 
+### Kurzbeschreibung - Grundlegende Informationen zum Projekt
+
+### Kurze Beschreibung der Zielsetzung
+
+### Aufbau des Projekts
+
+## Start
 ### Prerequisites
 API-Credentials für Gemini als Umgebungsvariable bereitstellen (app.py: GEMINI_API_KEY = os.getenv("GEMINI_API_KEY"))
 
@@ -37,6 +44,11 @@ Local URL: http://localhost:8501
 
 Beenden mit 'Strg + c' im python prompt
 
+### Updates
+
+- pip freeze > requirements.txt
+
+
 ### Übersicht st.session_state keys
 
 - logged_in
@@ -44,10 +56,6 @@ Beenden mit 'Strg + c' im python prompt
 - show_snow
 - last_auth_action
 - show_ma
-
-### Updates
-
-- pip freeze > requirements.txt
 
 ### Teilaufgaben
 - Basti
