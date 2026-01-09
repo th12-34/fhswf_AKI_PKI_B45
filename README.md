@@ -52,7 +52,7 @@ Beenden mit 'Strg + c' im python prompt
 ### Teilaufgaben
 - Basti
 - Gregor
-- Max: Indikatoren im Asset-Chart, Navigation Sidebar,  Anpassungen: Layout, Log-In, Authentication Klasse
+- Max: Moving-Average im Kurs-Chart, RSI & MACD Chart, Navigation Sidebar,  Anpassungen: Layout, Log-In, Authentication Klasse
 - Maxim 
 - Thorben Herfeld: Klasse für Prognose und Analyse + grafische Integration in streamlit; Architektur (anteilig mit Basti)
 
