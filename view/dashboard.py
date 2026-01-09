@@ -2,8 +2,65 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
-from prognose_analyse import prognose_analyse
 import matplotlib.pyplot as plt
+from prognose_analyse import prognose_analyse
+from datetime import datetime
+
+# --- Indikatoren ---
+# Indikator Gleitender Durchschnitt Optionen
+MA_WINDOWS = [20, 50, 200]
+
+# Toogle Buttons in Tabelle dynamisch erzeugen
+def indicator_toogles(windows: list[int]) -> dict[int, bool]:
+    cols = st.columns(len(windows))
+    return {
+        w: cols[i].toggle(f"MA{w}", key=f"show_ma_{w}")
+        for i, w in enumerate(windows)
+    }
+
+# Traces dynamisch hinzufügen
+def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
+    close = data["Close"]
+
+    for w, is_on in enabled.items():
+        if not is_on:
+            continue
+
+        if len(close) < w:
+            st.info(f"MA{w}: mindestens {w} Datenpunkte nötig (aktuell {len(close)}).")
+            continue
+        
+        # Gleitender Durchschnitt berechnen
+        ma = close.rolling(window=w, min_periods=w).mean()
+        fig.add_trace(go.Scatter(
+            x=data.index,
+            y=ma,
+            mode="lines",
+            name=f"MA{w}"
+        ))
+
+def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
+    delta = close.diff()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+
+    avg_gain = gain.rolling(window=period, min_periods=period).mean()
+    avg_loss = loss.rolling(window=period, min_periods=period).mean()
+
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+def compute_macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9):
+    ema_fast = close.ewm(span=fast, adjust=False).mean()
+    ema_slow = close.ewm(span=slow, adjust=False).mean()
+
+    macd = ema_fast - ema_slow
+    signal_line = macd.ewm(span=signal, adjust=False).mean()
+    hist = macd - signal_line
+
+    return macd, signal_line, hist
+# -------------------------------
 
 
 def load_data(symbol, period, interval):
@@ -12,7 +69,24 @@ def load_data(symbol, period, interval):
         return
 
     try:
-        data = yf.download(symbol, period=period, interval=interval, progress=False)
+        
+        if period == "ytd":
+            now = datetime.now()
+            start = datetime(now.year, 1, 1)
+            data = yf.download(
+                symbol,
+                start=start,
+                end=now,
+                interval=interval,
+                progress=False
+            )
+        else:
+            data = yf.download(
+                symbol,
+                period=period,
+                interval=interval,
+                progress=False
+            )
 
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0)
@@ -34,6 +108,11 @@ def load_data(symbol, period, interval):
 
 
 def show_dashboard():
+
+    if "selected_symbol" not in st.session_state:
+        st.session_state["selected_symbol"] = None
+    if "data" not in st.session_state:
+        st.session_state["data"] = None
     
     prog_ana_data = prognose_analyse()
     query = st.text_input(
@@ -92,6 +171,7 @@ def show_dashboard():
 
     selected_symbol = st.session_state.get("selected_symbol")
 
+    # --- Daten-Optionen ---
     if selected_symbol:
         st.header(f"Daten-Optionen für {selected_symbol}")
         
@@ -104,6 +184,7 @@ def show_dashboard():
                 "1 Monat": "1mo",
                 "3 Monate": "3mo",
                 "6 Monate": "6mo",
+                "YTD": "ytd",
                 "1 Jahr": "1y",
                 "2 Jahre": "2y",
                 "5 Jahre": "5y",
@@ -112,7 +193,7 @@ def show_dashboard():
             selected_period_label = st.selectbox(
                 "Periode auswählen:",
                 options=list(period_options.keys()),
-                index=5,
+                index=6,
                 key="input_period"
             )
             selected_period_code = period_options[selected_period_label]
@@ -146,7 +227,7 @@ def show_dashboard():
         if needs_reload:
             load_data(selected_symbol, selected_period_code, selected_interval_code)
 
-
+    # --- Diagramm ---
     if st.session_state["data"] is not None:
         data = st.session_state["data"]
         symbol = st.session_state["symbol"]
@@ -165,19 +246,93 @@ def show_dashboard():
         c2.metric("Veränderung", f"{pct:.2f} %")
         c3.metric("Datenpunkte", len(data))
 
-        fig = go.Figure(data=[go.Scatter(
+        st.markdown("**Indikatoren**")
+        # Gleitender Durchschnitt Indikatoren Button hinzufügen
+        enabled = indicator_toogles(MA_WINDOWS)
+
+        # zuerst leer initialisieren
+        fig = go.Figure()
+        # Traces schrittweise hinzufügen - Close Linie
+        fig.add_trace(go.Scatter(
             x=data.index,
             y=data["Close"],
             mode="lines",
             name="Close"
-        )])
-        fig.update_layout(title=f"{symbol} Schlusskurse", template="plotly_dark", height=500)
-        st.plotly_chart(fig, width='stretch')
+        ))
 
-        with st.expander("Rohdaten"):
-            st.dataframe(data.tail(20))
+        fig.update_layout(
+            title=f"{symbol} Schlusskurse", 
+            template="plotly_dark", 
+            height=500
+            )
         
-        # Prognose und Analyse 
+        # Gleitender Durchschnitt traces hinzufügen
+        add_ma_traces(fig, data, enabled)
+
+        st.plotly_chart(fig, width="stretch")
+
+        # --- Chart RSI ---
+        st.markdown("**Relative Strength Index**")
+
+        rsi = compute_rsi(data["Close"])
+
+        fig_rsi = go.Figure()
+        fig_rsi.add_trace(go.Scatter(
+            x=data.index,
+            y=rsi,
+            mode="lines",
+            name="RSI (14)"
+        ))
+
+        # Overbought / Oversold Linien
+        fig_rsi.add_hline(y=70, line_dash="dash")
+        fig_rsi.add_hline(y=30, line_dash="dash")
+
+        fig_rsi.update_layout(
+            template="plotly_dark",
+            height=250,
+            yaxis_title="RSI",
+            yaxis=dict(range=[0, 100])
+        )
+
+        st.plotly_chart(fig_rsi, use_container_width=True)
+
+        # --- Chart MACD ---
+        st.markdown("**Moving Average Convergene/Divergence**")
+
+        macd, signal_line, hist = compute_macd(data["Close"])
+
+        fig_macd = go.Figure()
+
+        fig_macd.add_trace(go.Bar(
+            x=data.index,
+            y=hist,
+            name="Histogramm"
+        ))
+
+        fig_macd.add_trace(go.Scatter(
+            x=data.index,
+            y=macd,
+            mode="lines",
+            name="MACD"
+        ))
+
+        fig_macd.add_trace(go.Scatter(
+            x=data.index,
+            y=signal_line,
+            mode="lines",
+            name="Signal"
+        ))
+
+        fig_macd.update_layout(
+            template="plotly_dark",
+            height=250,
+            yaxis_title="MACD"
+        )
+
+        st.plotly_chart(fig_macd, use_container_width=True)
+
+        # --- Prognose und Analyse ----
         with st.expander("Prognose und Analyse"):
             col1, col2 = st.columns(2)
 

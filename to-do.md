@@ -8,11 +8,12 @@
 - [ ] Objektorientiert? statt Funktionen aufrufen
 - [x] Requirements.txt reparieren?
 - [ ] Performance verbessern
+- [ ] Einsprachig: Englisch bzw. Deutsch
 
 ### Authentifizierung
 
 - [ ] Registrierungen: Auf Email-Syntax überprüfen
-- [ ] Registrierungspage: copy paste auf dedizierte page und button einfügen
+- [x] ? Registrierungspage: copy paste auf dedizierte page und button einfügen
 
 ### Aktien Analyse
 
@@ -28,7 +29,7 @@
 ### Sentiment-Analyse
 
 - [x] Sentimentanalyse: teil der news mit angeben
-      Prognose: Linie/Kursziel plotten
+- [ ] Prognose: Linie/Kursziel plotten
 
 ## Doku
 

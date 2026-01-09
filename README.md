@@ -37,15 +37,25 @@ Local URL: http://localhost:8501
 
 Beenden mit 'Strg + c' im python prompt
 
+### Übersicht st.session_state keys
+
+- logged_in
+- username
+- show_snow
+- last_auth_action
+- show_ma
+
 ### Updates
 
 - pip freeze > requirements.txt
 
-
-
 ### Teilaufgaben
 - Basti
 - Gregor
-- Max
+- Max: Indikatoren im Asset-Chart, Navigation Sidebar,  Anpassungen: Layout, Log-In, Authentication Klasse
 - Maxim 
 - Thorben Herfeld: Klasse für Prognose und Analyse + grafische Integration in streamlit; Architektur (anteilig mit Basti)
+
+### Quellen
+
+ChatGPT

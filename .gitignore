@@ -1,9 +1,10 @@
+# venv files
 pki-env/
+venv/
 # macOS metadata
 .DS_Store
+# python cache - rekursiv, auch in pages
 __pycache__/
+# local app data
 user.db
-pages/__pycache__/
-venv/
 auth.json
-

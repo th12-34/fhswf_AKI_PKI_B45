@@ -14,10 +14,11 @@ class PortfolioManager():
         self.portfolioIds.append(id)
         self.selectPortfolioId(id) # select last added portfolio as current  to manage
 
-    def deletePortfolio(self, portfolioId : int):
+    def deletePortfolio(self, portfolioId : int) -> bool:
         success = self.handler.delete_portfolio(self.userName,portfolioId)
         if not success:
-            print("couldnt delete portfolio")
+            print(f"Could not delete portfolio {portfolioId}")
+        return success
 
     def selectPortfolioId(self, id :int):
         if id in self.portfolioIds:
@@ -61,8 +62,3 @@ class PortfolioManager():
         else:
             print("No portfolio selected. Cannot delete asset.")
             return False
-        
-        
-    
-    
-

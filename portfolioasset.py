@@ -1,12 +1,10 @@
-from typing import Optional
-
 class PortfolioAsset:
     def __init__(
         self,
         portfolio_id: int,
         asset_type: str,
         asset_symbol: str,
-        asset_name: Optional[str],
+        asset_name: str | None,
         amount: float,
         buy_price: float,          
         bought_at: str,

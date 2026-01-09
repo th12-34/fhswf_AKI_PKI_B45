@@ -124,10 +124,9 @@ def _fetch_price_for_date(symbol: str, d: datetime.date) -> float | None:
         return None
 
 
-def show_add_assets_page():
-    st.title("Portfolio verwalten")
+def show_view_page():
     
-    user = auth.get_logged_in_user()
+    user = st.session_state.get(Authentication.KEY_USER)
     if not user: 
         st.warning("Bitte logge dich ein.")
         return
@@ -137,24 +136,6 @@ def show_add_assets_page():
         st.session_state.manager = PortfolioManager(user["username"])
     
     manager = st.session_state.manager
-
-    # --- 1. Portfolio erstellen ---
-
-    if "portfolio_success" in st.session_state:
-        st.success(st.session_state.portfolio_success)
-        del st.session_state.portfolio_success
-
-    with st.expander("Neues Portfolio erstellen"):
-        new_portfolio_name = st.text_input("Name des neuen Portfolios")
-        if st.button("Erstellen"):
-            if new_portfolio_name:
-                manager.createPortfolio(new_portfolio_name)
-                st.session_state.portfolio_success = f"Portfolio '{new_portfolio_name}' wurde erstellt!"
-                st.rerun()
-            else:
-                st.error("Bitte gib einen Namen ein.")
-
-    st.divider()
 
     # --- 2. Portfolio auswählen ---
     portfolios = manager.getPortfolios()
@@ -175,69 +156,115 @@ def show_add_assets_page():
     if manager.currentPortfolio:
         st.metric("Gesamtwert (EUR)", f"{manager.currentPortfolio.get_total_value():.2f} €")
 
-    if st.button("Portfolio löschen"):
-        manager.deletePortfolio(selected_portfolio_id)
-        st.rerun()
+    with st.expander("Neues Asset hinzufügen", expanded=False):
 
-    st.subheader("Neues Asset hinzufügen")
+        # --- 3. Suche & Autocomplete ---
+        # sonst kein reset der Sucheleiste möglich
+        if "reset_nonce" not in st.session_state:
+            st.session_state["reset_nonce"] = 0
 
-    # --- 3. Suche & Autocomplete ---
-    query = st.text_input("Suche nach Aktie oder Krypto", key="asset_search_query")
-    selected_symbol = None
+        query = st.text_input("Suche nach Aktie oder Krypto", key=f"asset_search_query_{st.session_state.reset_nonce}")
+        selected_symbol = None
 
-    if query:
-        try:
-            result = yf.Search(query, max_results=5)
-            options = [f"{q['symbol']} – {q.get('shortname', 'N/A')}" for q in result.quotes]
-            if options:
-                choice = st.selectbox("Vorschläge", ["--- Bitte wählen ---"] + options)
-                if choice != "--- Bitte wählen ---":
-                    selected_symbol = choice.split(" – ")[0]
-                    st.session_state["asset_symbol_input"] = selected_symbol
-        except Exception as e:
-            st.error(f"Suche fehlgeschlagen: {e}")
-
-    # --- 4. Formular zum Hinzufügen ---
-    with st.form("add_asset_form"):
-        asset_symbol_val = st.text_input("Symbol", key="asset_symbol_input")
-        amount_val = st.number_input("Menge", min_value=0.0, step=0.01)
-        preis_modus = st.radio("Preis", ["Automatisch", "Manuell"])
-        manual_price = st.number_input("Preis pro Einheit (falls manuell)", min_value=0.0)
-        date = st.date_input("Kaufdatum", value=datetime.date.today())
+        # Zuerst nach Symbol suchen, dann erst Optionen zum hinzufügen anzeigen, hilft auch für den Form-Reset
+        if "show_form" not in st.session_state:
+            st.session_state["show_form"] = False
         
-        submit = st.form_submit_button("Hinzufügen")
+        def reset_all():
+            for k in [
+                "asset_symbol_input",
+                "amount_input",
+                "price_mode_input",
+                "manual_price_input",
+                "date_input",
+                "asset_choice",
+            ]:
+                st.session_state.pop(k, None)
 
-        if submit:
-            if not asset_symbol_val or amount_val <= 0:
-                st.error("Bitte Symbol und Menge prüfen.")
-            else:
-                # Preis ermitteln
-                if preis_modus == "Automatisch":
-                    price_in_ccy = _fetch_price_for_date(asset_symbol_val, date)
-                    ccy = _get_ticker_currency(asset_symbol_val) or "EUR"
-                    price_eur = _convert_to_eur(price_in_ccy, ccy, date)                
-                else:
-                    price_eur = manual_price
+            st.session_state.show_form = False
+            st.session_state.reset_nonce += 1
+            st.rerun()
 
-                if price_eur:
-                    # PortfolioAsset Objekt erstellen
-                    from portfolioasset import PortfolioAsset
-                    new_asset = PortfolioAsset(
-                        portfolio_id=selected_portfolio_id,
-                        asset_type=_infer_asset_type(asset_symbol_val),
-                        asset_symbol=asset_symbol_val,
-                        asset_name=_fetch_yf_name(asset_symbol_val),
-                        amount=amount_val,
-                        buy_price=price_eur,
-                        bought_at=date.strftime("%Y-%m-%d")
+        if query:
+            try:
+                result = yf.Search(query, max_results=5)
+                options = [f"{q['symbol']} – {q.get('shortname', 'N/A')}" for q in result.quotes]
+                if options:
+                    choice = st.selectbox("Vorschläge", ["--- Bitte wählen ---"] + options)
+                    if choice != "--- Bitte wählen ---":
+                        selected_symbol = choice.split(" – ")[0]
+                        st.session_state["asset_symbol_input"] = selected_symbol
+                        st.session_state["show_form"] = True
+            except Exception as e:
+                st.error(f"Suche fehlgeschlagen: {e}")
+
+        # --- 4. Formular zum Hinzufügen ---
+        if st.session_state["show_form"]:
+
+            with st.form("add_asset_form"): # kein clear_on_submit, da sonst direkt alle Widgets gelöscht werden, auch wenn es eine Fehlermeldung gab
+                asset_symbol_val = st.text_input(
+                    "Symbol", 
+                    key="asset_symbol_input"
                     )
-                    
-                    # ÜBER MANAGER HINZUFÜGEN (Wichtig für Refresh!)
-                    manager.addAssetToPortfolio(new_asset)
-                    st.success(f"{asset_symbol_val} hinzugefügt!")
-                    st.rerun()
-                else:
-                    st.error("Preis konnte nicht ermittelt werden.")
+                amount_val = st.number_input(
+                    "Menge", 
+                    min_value=0.0, 
+                    step=0.01, 
+                    key="amount_input"
+                    )
+                date = st.date_input(
+                    "Kaufdatum", 
+                    value=datetime.date.today(), 
+                    key="date_input"
+                    )
+                preis_modus = st.radio(
+                    "Preis", 
+                    ["Automatisch", "Manuell"], 
+                    key="price_mode_input"
+                    )
+                manual_price = st.number_input(
+                    "Preis pro Einheit", 
+                    min_value=0.0,
+                    key="manual_price_input",
+                    )
+                
+                submit = st.form_submit_button("Hinzufügen")
+
+                if submit:
+                    if not asset_symbol_val or amount_val <= 0:
+                        st.error("Bitte Symbol und Menge prüfen.")
+                    else:
+                        # Preis ermitteln
+                        if preis_modus == "Automatisch":
+                            price_in_ccy = _fetch_price_for_date(asset_symbol_val, date)
+                            ccy = _get_ticker_currency(asset_symbol_val) or "EUR"
+                            price_eur = _convert_to_eur(price_in_ccy, ccy, date)                
+                        else:
+                            price_eur = manual_price
+
+                        if price_eur:
+                            # PortfolioAsset Objekt erstellen
+                            from portfolioasset import PortfolioAsset
+                            new_asset = PortfolioAsset(
+                                portfolio_id=selected_portfolio_id,
+                                asset_type=_infer_asset_type(asset_symbol_val),
+                                asset_symbol=asset_symbol_val,
+                                asset_name=_fetch_yf_name(asset_symbol_val),
+                                amount=amount_val,
+                                buy_price=price_eur,
+                                bought_at=date.strftime("%Y-%m-%d")
+                            )
+                            
+                            # ÜBER MANAGER HINZUFÜGEN (Wichtig für Refresh!)
+                            manager.addAssetToPortfolio(new_asset)
+                            st.success(f"{asset_symbol_val} hinzugefügt!")
+                            
+                            reset_all()
+                            st.rerun()
+                        else:
+                            st.error("Preis konnte nicht ermittelt werden.")
+    
+    st.divider()
 
 # --- 5. Übersichtstabelle ---
     st.subheader("Aktuelle Assets")

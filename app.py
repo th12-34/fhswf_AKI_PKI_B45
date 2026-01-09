@@ -1,36 +1,69 @@
 import streamlit as st
-from pages.register_page import show_register_page
-from pages.dashboard import show_dashboard
-from navbar import render_top_navbar
-from pages.portfolio_page import show_add_assets_page   
+from topbar import render_topbar
+# pages Ordner würde die standardmäßige Sidebar kurz zuerst laden
+from view.dashboard import show_dashboard
+from view.portfolio_view import show_view_page 
+from view.portfolios_manage import show_manage_page    
+from authentication import Authentication 
 
-st.set_page_config(page_title="Mein Finanz-Dashboard", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="Mein Finanz-Dashboard",
+    layout="wide", 
+    initial_sidebar_state="expanded"
+    )
+
+# Damit könnte man den Header mit den Default Streamlit Optionen oben rechts deaktiveren, dann kann man aber die seitliche Navigationsleiste nicht mehr aufklappen
+st.markdown("""
+<style>
+header[data-testid="stHeader"] {
+    height: 0px;
+    visibility: hidden;
+}
+header[data-testid="stHeader"] * {
+    visibility: visible;
+}
+.block-container {
+    padding-top: 1rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+def dashboard_page():
+    st.session_state["page_key"] = "Analyse"
+    render_topbar()
+    show_dashboard()
+
+def portfolios_manage_page():
+    st.session_state["page_key"] = "Portfolio-Verwaltung"
+    render_topbar()
+    show_manage_page()
+
+def portfolio_view_page():
+    st.session_state["page_key"] = "Portfolio-Ansicht"
+    render_topbar()
+    show_view_page()
+
 
 def main():
 
-    st.title("Finanzen")
-    if "selected_symbol" not in st.session_state:
-        st.session_state["selected_symbol"] = None
-    if "data" not in st.session_state:
-        st.session_state["data"] = None
+    # Nach Start / Reload prüfen, ob bereits eine Session aktiv ist (Login)
+    auth = Authentication()
+    auth.restore_session()
 
-    if "page" not in st.session_state:
-        st.session_state["headerTitel"] = "Finanzübersicht"
-        st.session_state.page = "dashboard"
-        st.session_state['show_login_form'] = False
+    # dedizierter pages Ordner nicht notwendig
+    pages = {
+        "Overview":[
+            st.Page(dashboard_page, title="Analyse", url_path="dashboard"),
+        ],
+        "Portfolios": [
+            st.Page(portfolios_manage_page, title="Verwaltung", url_path="portfolios-manage"),
+            st.Page(portfolio_view_page, title="Ansicht", url_path="portfolio-view"),
+        ],
+    }
 
-    page = st.session_state.page
-
-    # Navbar (inkl. Login, Navigation etc.)
-    render_top_navbar()
-
-    # Page-Routing
-    if page == "dashboard":
-        show_dashboard()
-    elif page == "register_page":
-        show_register_page()
-    elif page == "add_assets":             
-        show_add_assets_page()
+    pg = st.navigation(pages, position="sidebar")
+    pg.run()
 
 
 if __name__ == "__main__":
