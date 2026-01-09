@@ -11,7 +11,7 @@
 - [x] Requirements.txt reparieren?
 - [ ] !! Requirements.txt aktualisieren (pip freeze)
 - [ ] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval
-- [ ] !! Python Linter drüber laufen lassen
+- [ ] !! Python Linter drüber laufen lassen -> Gregor, Maxim
 - [ ] Optional: yfinance log-errors (YF.download() has changed argument auto_adjust default to True & Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead return float(data_before["Close"].iloc[-1]))
 - [ ] Bugs suchen und auf Log-Errors überprüfen -> alle
 - [ ] Quellen hinzufügen -> alle
