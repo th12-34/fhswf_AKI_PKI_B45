@@ -1,6 +1,10 @@
-# venv files
+# folders
 pki-env/
 venv/
+.vscode/
+bin/
+lib/
+lib64/
 # macOS metadata
 .DS_Store
 # python cache - rekursiv, auch in pages
