@@ -188,19 +188,24 @@ class Authentication:
         return False
     
     def restore_session(self) -> None:
-        # nur wenn nicht eingeloggt
         if st.session_state[self.KEY_LOGGED_IN]:
             return
+
+        if not os.path.exists(AUTH_FILE):
+            return  # völlig normal, nichts zu restaurieren
+
         try:
             with open(AUTH_FILE, "r") as f:
                 user = json.load(f)
 
             if not user:
                 return
-            
+
             st.session_state[self.KEY_LOGGED_IN] = True
             st.session_state[self.KEY_USER] = user
             st.session_state[self.KEY_USERNAME] = user.get("username", "Guest")
 
+        except json.JSONDecodeError:
+            logging.error("AUTH_FILE ist beschädigt (JSON ungültig)")
         except Exception:
-            logging.exception("Fehler beim Session-Restore")
+            logging.exception("Unerwarteter Fehler beim Session-Restore")
