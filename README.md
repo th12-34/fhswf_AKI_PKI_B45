@@ -48,9 +48,6 @@ Die Anwendung ist anschließend unter http://localhost:8501 erreichbar.
 
 ### Zentrale Konfiguration (`Config`)
 
-**Autor:** Bastian Pivarcsi  
-**Datum:** 13.01.2026
-
 Zentrale Verwaltung von Session-State-Keys und globalen Einstellungen.
 
 ```python
