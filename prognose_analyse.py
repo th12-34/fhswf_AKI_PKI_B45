@@ -8,6 +8,18 @@ Datum: 12.01.2026
 Beschreibung:
 Diese Klasse stellt Methoden bereit, um basierend auf yfinance Daten
 Empfehlungen für den Kauf oder Verkauf einer Aktie zu ermitteln.
+
+
+Quellen: 
+- Programmierung
+    - Lehrbrief zur Vorlesung
+    - ChatGPT
+    - https://docs.python.org/3/reference/index.html
+    
+- ARIMA:
+    - https://de.wikipedia.org/wiki/ARMA-Modell#ARIMA
+    - https://www.youtube.com/watch?v=JMT1eGJ9c2M
+    - https://people.duke.edu/~rnau/411arim.htm
 """
 
 import yfinance as yf

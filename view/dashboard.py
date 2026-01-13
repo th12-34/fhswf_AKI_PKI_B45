@@ -337,15 +337,17 @@ def show_dashboard():
             col1, col2 = st.columns(2)
 
             if st.button("Prognose und Analyse ausführen"):
-                # update data in objekt für prognose und analyse 
+                # update Attribute in Klassenobjekt für prognose und analyse 
                 prog_ana_data.update(symbol)
 
                 with st.spinner('Prognose und Analyse läuft...'):                   
                     with col1:
                         st.subheader("Prognose Kursentwicklung")
 
+                        # lies Attributdaten
                         progdata, predictions, pred_days = prog_ana_data.get_prediction()
-                    
+
+                        # Graph für Prognoseverlauf
                         figProg = go.Figure()
                         
                         # historischer Kursverlauf
@@ -355,21 +357,21 @@ def show_dashboard():
                                 mode="lines",
                                 name="Historie"))
     
-                        # 7-tagesprognose
+                        # 7-Tages-Prognose
                         figProg.add_trace(go.Scatter(
                                 x = pred_days,
                                 y = predictions,
                                 mode="lines",
                                 name="Vorhersage"))
                         
-                        # 7-tageskursziel
+                        # 14-Tageskursziel
                         figProg.add_trace(go.Scatter(
                                 x = [progdata.index[0], pred_days[-1]],
                                 y = [predictions[-1], predictions[-1]],
                                 mode="lines",
                                 name="Kursziel"))
                         
-                     
+                        # Styling des plots
                         figProg.update_layout(
                             title="Kursentwicklung und Vorhersage",
                             xaxis_title="Datum",
@@ -382,6 +384,7 @@ def show_dashboard():
                     with col2:
                         st.subheader("News-basierte Handlungsempfehlung:")
 
+                        # lies Attributdaten
                         empfehlung, news = prog_ana_data.get_sentiment()
                                            
                         # Darstellung Empfehlung
