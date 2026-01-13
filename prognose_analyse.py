@@ -23,14 +23,16 @@ Quellen:
 """
 
 import yfinance as yf
+import streamlit as st
 from statsmodels.tsa.arima.model import ARIMA
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from gnews import GNews
 from google import genai
 import os
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+from databaseHandler import DatabaseAdministration
+import config
+import logging
 
 class prognose_analyse:
     """
@@ -59,6 +61,8 @@ class prognose_analyse:
         sent_dict['news_red'] = ''
         sent_dict['empfehlung'] = ''
         self.sent_dict = sent_dict
+        self.user_administration = DatabaseAdministration()
+        self.KEY_USERNAME = config.KEY_USERNAME
         
 
     def ticker2Firma(self, tickername):
@@ -142,16 +146,41 @@ class prognose_analyse:
             self.sent_dict['news_red'] = err_msg
             self.sent_dict['empfehlung'] = err_msg
 
-            return        
+            return    
+        
+        GEMINI_API_KEY = None
 
-        # initialisiere LLM
-        if GEMINI_API_KEY is None or GEMINI_API_KEY == "":
-            err_msg = 'Pruefe GEMINI API KEY'
+        try:
+            GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+        except Exception:
+            # Fehler beim Lesen der Env-Variable unterdrücken oder loggen
+            pass
+
+        # 3. Versuch: Wenn noch kein Key da, aus der Datenbank laden
+        if not GEMINI_API_KEY:
+            # Stelle sicher, dass der Nutzer eingeloggt ist (Key existiert im Session State)
+            username = st.session_state.get(config.KEY_USERNAME)
+            if username:
+                # Nutzt deinen DatabaseAdministration Handler
+                GEMINI_API_KEY = self.user_administration.get_gemini_api_key(username)
+
+        # 4. Validierung: Abbruch, falls immer noch kein Key gefunden wurde
+        if not GEMINI_API_KEY:
+            err_msg = 'Pruefe GEMINI API KEY: Kein Key in Umgebung oder Datenbank gefunden.'
             self.sent_dict['news_red'] = err_msg
             self.sent_dict['empfehlung'] = err_msg
             return
-    
-        client = genai.Client(api_key=GEMINI_API_KEY)
+
+        # 5. Client initialisieren
+        try:
+            # Initialisierung des Google AI Clients mit dem gefundenen Key
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            
+
+        except Exception as e:
+            logging.exception("Unerwarteter Fehler beim Initialisieren des Gemini Clients")
+            self.sent_dict['news_red'] = "Fehler bei der API-Initialisierung"
+            return
 
         # Prompt-Erstellung
         prompt = "Du bist ein erfahrener Profi am Finanzmarkt. Du hast ein feines Gespür für neue Nachrichten und wie diese sich auf die Kursverläufe von Aktien auswirken. Aus einer Reihe von Nachrichten erstellst du eine Empfehlung. Antworte nur mit Verkaufen, Halten oder Kaufen. Beziehe dich auf folgende News:"
