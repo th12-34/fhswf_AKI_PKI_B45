@@ -25,11 +25,11 @@ Für die Nutzung der Analyse-Funktionen müssen die API-Credentials für Gemini 
 > **Hinweis zur API-Key Priorisierung:**  
 > Die Anwendung prüft primär die Umgebungsvariable des Betriebssystems. Ein beim Login hinterlegter API-Key wird nur verwendet, wenn keine globale Umgebungsvariable vorhanden ist.
 
-| Betriebssystem | Befehl |
-| --- | --- |
-| Linux / macOS | `export GEMINI_API_KEY="key"` |
-| Windows (PowerShell) | `$env:GEMINI_API_KEY="key"` |
-| Windows (CMD) | `set GEMINI_API_KEY="key"` |
+| Betriebssystem       | Befehl                        |
+| -------------------- | ----------------------------- |
+| Linux / macOS        | `export GEMINI_API_KEY="key"` |
+| Windows (PowerShell) | `$env:GEMINI_API_KEY="key"`   |
+| Windows (CMD)        | `set GEMINI_API_KEY="key"`    |
 
 ### 2. Durchführung
 
@@ -74,40 +74,11 @@ Zusätzliche Steuerungs-Keys:
 
 ## Aufgabenverteilung
 
-- **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page  
-- **Gregor:** UI (TBD)  
-- **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung  
-- **Maxim:** Portfolio-Optimierung (TBD)  
+- **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page
+- **Gregor:** UI (TBD)
+- **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
+- **Maxim:** Portfolio-Optimierung (TBD)
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
-
----
-
-## Verbesserungen / Erweiterungen
-
-### Allgemein & Code-Qualität
-
-- [ ] Exception Logging (`logging.exception`)
-- [ ] Session-State Dokumentation
-- [x] Objektorientierte Portfolio-Struktur
-- [x] Kommentierung & Header
-- [ ] Linter & Bugfixing
-
-### Authentifizierung & Analyse
-
-- [x] E-Mail Validierung
-- [x] Registrierungsseite
-- [x] Persistente Sessions
-- [x] Technische Indikatoren
-- [x] Dashboard-Optimierung
-
-### Portfolio & Prognose
-
-- [ ] Wertentwicklungs-Visualisierung
-- [ ] Portfolio-Optimierung
-- [x] Sentiment-Analyse
-- [x] Kursprognosen
-
----
 
 ## Dokumentation & Quellen
 
