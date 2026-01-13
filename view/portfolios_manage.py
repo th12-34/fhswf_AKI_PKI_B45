@@ -1,5 +1,5 @@
 """
-Programmname: Portfolio-Verwaltung (Management)
+Seitenname: Portfolio-Verwaltung (Management)
 
 Autor: 
 
@@ -14,8 +14,6 @@ Kommunikation mit der Datenbank.
 
 Quellen: 
 - Programmierung
-    - Lehrbrief zur Vorlesung
-    - ChatGPT
     - https://yfinance.yahoofinance.com/
 """
 

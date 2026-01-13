@@ -1,3 +1,23 @@
+"""
+Seitenname: Dashboard
+
+Autor: 
+
+Datum: 13.01.2026
+
+Beschreibung:
+Dieses Modul bildet das Herzstück der Benutzeroberfläche. Es ermöglicht die Suche 
+nach Wertpapieren über Yahoo Finance, visualisiert historische Kursdaten inklusive 
+technischer Indikatoren (MA, RSI, MACD) und integriert die KI-basierte Prognose 
+sowie Sentiment-Analyse.
+
+
+Quellen: 
+- Programmierung
+    - https://plotly.com/python/
+    - https://yfinance.yahoofinance.com/
+"""
+
 import streamlit as st
 import yfinance as yf
 import pandas as pd
@@ -10,16 +30,20 @@ from datetime import datetime
 # Indikator Gleitender Durchschnitt Optionen
 MA_WINDOWS = [20, 50, 200]
 
-# Toogle Buttons in Tabelle dynamisch erzeugen
 def indicator_toogles(windows: list[int]) -> dict[int, bool]:
+    """
+    Erzeugt Toogle-Buttons in der Tabelle dynamisch.
+    """
     cols = st.columns(len(windows))
     return {
         w: cols[i].toggle(f"MA{w}", key=f"show_ma_{w}")
         for i, w in enumerate(windows)
     }
 
-# Traces dynamisch hinzufügen
 def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
+    """
+    Fügt Traces für gleitende Durchschnitte dynamisch hinzu.
+    """
     close = data["Close"]
 
     for w, is_on in enabled.items():
@@ -40,6 +64,9 @@ def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
         ))
 
 def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
+    """
+    Berechnet den Relative Strength Index (RSI).
+    """
     delta = close.diff()
     gain = delta.clip(lower=0)
     loss = -delta.clip(upper=0)
@@ -52,6 +79,9 @@ def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
     return rsi
 
 def compute_macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9):
+    """
+    Berechnet den MACD-Indikator.
+    """
     ema_fast = close.ewm(span=fast, adjust=False).mean()
     ema_slow = close.ewm(span=slow, adjust=False).mean()
 
@@ -60,16 +90,18 @@ def compute_macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int =
     hist = macd - signal_line
 
     return macd, signal_line, hist
+
 # -------------------------------
 
-
 def load_data(symbol, period, interval):
+    """
+    Lädt die Finanzdaten über Yahoo Finance.
+    """
     if not symbol:
         st.session_state["data"] = None
         return
 
     try:
-        
         if period == "ytd":
             now = datetime.now()
             start = datetime(now.year, 1, 1)
@@ -108,7 +140,9 @@ def load_data(symbol, period, interval):
 
 
 def show_dashboard():
-
+    """
+    Rendert das Dashboard-Interface.
+    """
     if "selected_symbol" not in st.session_state:
         st.session_state["selected_symbol"] = None
     if "data" not in st.session_state:
@@ -168,7 +202,6 @@ def show_dashboard():
             st.write("Fehler bei der Suche:", e)
             st.session_state["selected_symbol"] = None
 
-
     selected_symbol = st.session_state.get("selected_symbol")
 
     # --- Daten-Optionen ---
@@ -198,7 +231,6 @@ def show_dashboard():
             )
             selected_period_code = period_options[selected_period_label]
 
-
         with col_interval:
             interval_options = {
                 "1 Stunde (nur 730 Tage)": "1h",
@@ -214,7 +246,6 @@ def show_dashboard():
             )
             selected_interval_code = interval_options[selected_interval_label]
             
-        
         needs_reload = False
         
         if st.session_state["data"] is None and selected_symbol:
@@ -247,12 +278,9 @@ def show_dashboard():
         c3.metric("Datenpunkte", len(data))
 
         st.markdown("**Indikatoren**")
-        # Gleitender Durchschnitt Indikatoren Button hinzufügen
         enabled = indicator_toogles(MA_WINDOWS)
 
-        # zuerst leer initialisieren
         fig = go.Figure()
-        # Traces schrittweise hinzufügen - Close Linie
         fig.add_trace(go.Scatter(
             x=data.index,
             y=data["Close"],
@@ -266,14 +294,11 @@ def show_dashboard():
             height=500
             )
         
-        # Gleitender Durchschnitt traces hinzufügen
         add_ma_traces(fig, data, enabled)
-
         st.plotly_chart(fig, width="stretch")
 
         # --- Chart RSI ---
         st.markdown("**Relative Strength Index**")
-
         rsi = compute_rsi(data["Close"])
 
         fig_rsi = go.Figure()
@@ -284,7 +309,6 @@ def show_dashboard():
             name="RSI (14)"
         ))
 
-        # Overbought / Oversold Linien
         fig_rsi.add_hline(y=70, line_dash="dash")
         fig_rsi.add_hline(y=30, line_dash="dash")
 
@@ -295,28 +319,24 @@ def show_dashboard():
             yaxis=dict(range=[0, 100])
         )
 
-        st.plotly_chart(fig_rsi, use_container_width=True)
+        st.plotly_chart(fig_rsi, width="stretch")
 
         # --- Chart MACD ---
         st.markdown("**Moving Average Convergene/Divergence**")
-
         macd, signal_line, hist = compute_macd(data["Close"])
 
         fig_macd = go.Figure()
-
         fig_macd.add_trace(go.Bar(
             x=data.index,
             y=hist,
             name="Histogramm"
         ))
-
         fig_macd.add_trace(go.Scatter(
             x=data.index,
             y=macd,
             mode="lines",
             name="MACD"
         ))
-
         fig_macd.add_trace(go.Scatter(
             x=data.index,
             y=signal_line,
@@ -330,48 +350,39 @@ def show_dashboard():
             yaxis_title="MACD"
         )
 
-        st.plotly_chart(fig_macd, use_container_width=True)
+        st.plotly_chart(fig_macd, width="stretch")
 
         # --- Prognose und Analyse ----
         with st.expander("Prognose und Analyse"):
             col1, col2 = st.columns(2)
 
             if st.button("Prognose und Analyse ausführen"):
-                # update Attribute in Klassenobjekt für prognose und analyse 
                 prog_ana_data.update(symbol)
 
                 with st.spinner('Prognose und Analyse läuft...'):                   
                     with col1:
                         st.subheader("Prognose Kursentwicklung")
-
-                        # lies Attributdaten
                         progdata, predictions, pred_days = prog_ana_data.get_prediction()
 
-                        # Graph für Prognoseverlauf
                         figProg = go.Figure()
-                        
-                        # historischer Kursverlauf
                         figProg.add_trace(go.Scatter(
                                 x = progdata.index,
                                 y = progdata[symbol].values,
                                 mode="lines",
                                 name="Historie"))
     
-                        # 7-Tages-Prognose
                         figProg.add_trace(go.Scatter(
                                 x = pred_days,
                                 y = predictions,
                                 mode="lines",
                                 name="Vorhersage"))
                         
-                        # 14-Tageskursziel
                         figProg.add_trace(go.Scatter(
                                 x = [progdata.index[0], pred_days[-1]],
                                 y = [predictions[-1], predictions[-1]],
                                 mode="lines",
                                 name="Kursziel"))
                         
-                        # Styling des plots
                         figProg.update_layout(
                             title="Kursentwicklung und Vorhersage",
                             xaxis_title="Datum",
@@ -383,27 +394,17 @@ def show_dashboard():
 
                     with col2:
                         st.subheader("News-basierte Handlungsempfehlung:")
-
-                        # lies Attributdaten
                         empfehlung, news = prog_ana_data.get_sentiment()
                                            
-                        # Darstellung Empfehlung
                         st.markdown(
                             f"""
                             <div style="text-align: center; margin-top: 50px; font-size: 24px;">
                                 {empfehlung}
                             </div>
                             """, unsafe_allow_html=True)
-                        # Anzeige der wichtigsten News-Stichwörter
                         st.markdown(
                             f"""
                             <div style="text-align: center; margin-top: 50px; font-size: 12px;">
                                 {news}
                             </div>
                             """, unsafe_allow_html=True)
-
-                
-                
-
-
-                
