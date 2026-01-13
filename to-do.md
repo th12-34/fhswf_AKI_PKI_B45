@@ -5,7 +5,7 @@
 - [ ] Exception Logging: alle Exceptions: except Exception: logging.exception -> Max
 - [ ] alle session_states dokumentieren -> Max
 - [ ] session.state als Konstanten zentral in Klasse definiert, nicht als string lokal gesetzt (Wartbarkeit) -> jeder für eigene Dateien
-- [ ] Code umfangreich kommentieren (Kommentar-Kopf) -> jeder für eigene Datein
+- [x] Code umfangreich kommentieren (Kommentar-Kopf) -> jeder für eigene Datein
 - [x] Objektorientiert Portfolio
 - [x] Objektorientiert? statt Funktionen aufrufen
 - [x] Requirements.txt reparieren?
@@ -14,7 +14,8 @@
 - [ ] !! Python Linter drüber laufen lassen -> Gregor, Maxim
 - [ ] Optional: yfinance log-errors (YF.download() has changed argument auto_adjust default to True & Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead return float(data_before["Close"].iloc[-1]))
 - [ ] Bugs suchen und auf Log-Errors überprüfen -> alle
-- [ ] Quellen hinzufügen -> alle
+- [x?] Quellen hinzufügen -> alle
+- [ ] Autoren in Dateien anpassen -> alle
 
 ### Authentifizierung
 

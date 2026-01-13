@@ -1,69 +1,116 @@
-## fhswf_AKI_PKI_B45
-#### Repo fuer die gemeinsame Programmieraufgabe in Python
+# fhswf_AKI_PKI_B45
 
-### Kurzbeschreibung - Grundlegende Informationen zum Projekt
+**Repository für die gemeinsame Programmieraufgabe in Python**
 
-### Kurze Beschreibung der Zielsetzung
+---
+
+## Projektbeschreibung
+
+### Zielsetzung
+
+Entwicklung einer webbasierten Anwendung zur Analyse von Finanzdaten. Ziel ist es, technische Indikatoren zu visualisieren und KI-gestützte Prognosen mithilfe der Gemini-API zu erstellen.
 
 ### Aufbau des Projekts
 
-## Start
-### Prerequisites
-API-Credentials für Gemini als Umgebungsvariable bereitstellen (app.py: GEMINI_API_KEY = os.getenv("GEMINI_API_KEY"))
+Das Projekt ist modular in eine Streamlit-Oberfläche (Frontend) und verschiedene Logik-Klassen (Backend) unterteilt. Die Architektur trennt Datenverarbeitung, Authentifizierung und grafische Aufbereitung der Indikatoren.
 
-| OS    | Befehl |
-|-------|--------|
-| Linux | `export GEMINI_API_KEY="key"` |
-| PowerShell | `$env:GEMINI_API_KEY="key"` |
+---
 
-### Start
-1. python3 -m venv pki-env
-2. Environment aktivieren (siehe Tabelle)
-3. pip install -r requirements.txt
-4. python3 -m streamlit run app.py
+## Installation und Start
 
-| OS    | Befehl |
-|-------|--------|
-| Linux/macOS Bash/Zsh | `source pki-env/bin/activate` |
-| Windows | `pki-env\Scripts\activate` |
-| PowerShell | `pki-env\Scripts\Activate.ps1` |
+### 1. Voraussetzungen
 
-Ausgabe:
-      👋 Welcome to Streamlit!
+Für die Nutzung der Analyse-Funktionen müssen die API-Credentials für Gemini bereitgestellt werden.
 
-      If you'd like to receive helpful onboarding emails, news, offers, promotions,
-      and the occasional swag, please enter your email address below. Otherwise,
-      leave this field blank.
+> **Hinweis zur API-Key Priorisierung:**  
+> Die Anwendung prüft primär die Umgebungsvariable des Betriebssystems. Ein beim Login hinterlegter API-Key wird nur verwendet, wenn keine globale Umgebungsvariable vorhanden ist.
 
-Enter drücken--> Browser wird geöffnet
+| Betriebssystem | Befehl |
+| --- | --- |
+| Linux / macOS | `export GEMINI_API_KEY="key"` |
+| Windows (PowerShell) | `$env:GEMINI_API_KEY="key"` |
+| Windows (CMD) | `set GEMINI_API_KEY="key"` |
 
+### 2. Durchführung
 
-You can now view your Streamlit app in your browser.
+```bash
+python3 -m venv pki-env
+source pki-env/bin/activate   # Linux / macOS
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-Local URL: http://localhost:8501
+Die Anwendung ist anschließend unter http://localhost:8501 erreichbar.
 
-Beenden mit 'Strg + c' im python prompt
+---
 
-### Updates
+## Technische Details
 
-- pip freeze > requirements.txt
+### Zentrale Konfiguration (`Config`)
 
+**Autor:** Bastian Pivarcsi  
+**Datum:** 13.01.2026
 
-### Übersicht st.session_state keys
+Zentrale Verwaltung von Session-State-Keys und globalen Einstellungen.
 
-- logged_in
-- username
-- show_snow
-- last_auth_action
-- show_ma
+```python
+KEY_LOGGED_IN = "logged_in"
+KEY_USERNAME = "username"
+KEY_USER = "user"
+KEY_AUTH_ERROR = "auth_error"
+KEY_AUTH_INFO = "auth_info"
 
-### Teilaufgaben
-- Basti
-- Gregor
-- Max: Moving-Average im Kurs-Chart, RSI & MACD Chart, Navigation Sidebar,  Anpassungen: Layout, Log-In, Authentication Klasse
-- Maxim 
-- Thorben Herfeld: Klasse für Prognose und Analyse + grafische Integration in streamlit; Architektur (anteilig mit Basti)
+AUTH_FILE = "auth.json"
+DATABASE_NAME = "user.db"
+```
 
-### Quellen
+Zusätzliche Steuerungs-Keys:
 
-ChatGPT
+- `show_snow`
+- `last_auth_action`
+- `show_ma`
+
+---
+
+## Aufgabenverteilung
+
+- **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page  
+- **Gregor:** UI (TBD)  
+- **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung  
+- **Maxim:** Portfolio-Optimierung (TBD)  
+- **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
+
+---
+
+## Verbesserungen / Erweiterungen
+
+### Allgemein & Code-Qualität
+
+- [ ] Exception Logging (`logging.exception`)
+- [ ] Session-State Dokumentation
+- [x] Objektorientierte Portfolio-Struktur
+- [x] Kommentierung & Header
+- [ ] Linter & Bugfixing
+
+### Authentifizierung & Analyse
+
+- [x] E-Mail Validierung
+- [x] Registrierungsseite
+- [x] Persistente Sessions
+- [x] Technische Indikatoren
+- [x] Dashboard-Optimierung
+
+### Portfolio & Prognose
+
+- [ ] Wertentwicklungs-Visualisierung
+- [ ] Portfolio-Optimierung
+- [x] Sentiment-Analyse
+- [x] Kursprognosen
+
+---
+
+## Dokumentation & Quellen
+
+- Streamlit
+- Google Gemini API
+- ChatGPT
