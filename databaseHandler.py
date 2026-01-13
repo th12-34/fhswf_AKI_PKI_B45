@@ -25,7 +25,7 @@ import hashlib
 import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
-from config import DATABASE_NAME
+from appconfig import DATABASE_NAME
 
 # Grundkonfiguration für das Logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')

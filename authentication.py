@@ -14,7 +14,7 @@ import re
 import logging
 from email.utils import parseaddr
 from databaseHandler import DatabaseAdministration
-import config
+import appconfig
 
 class Authentication:
     """
@@ -24,12 +24,12 @@ class Authentication:
     def __init__(self):
         self.user_administration = DatabaseAdministration()
         self._EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
-        self.KEY_LOGGED_IN = config.KEY_LOGGED_IN
-        self.KEY_USERNAME = config.KEY_USERNAME
-        self.KEY_USER = config.KEY_USER
-        self.KEY_AUTH_ERROR = config.KEY_AUTH_ERROR
-        self.KEY_AUTH_INFO = config.KEY_AUTH_INFO
-        self.AUTH_FILE = config.AUTH_FILE
+        self.KEY_LOGGED_IN = appconfig.KEY_LOGGED_IN
+        self.KEY_USERNAME = appconfig.KEY_USERNAME
+        self.KEY_USER = appconfig.KEY_USER
+        self.KEY_AUTH_ERROR = appconfig.KEY_AUTH_ERROR
+        self.KEY_AUTH_INFO = appconfig.KEY_AUTH_INFO
+        self.AUTH_FILE = appconfig.AUTH_FILE
         # Defaults nur setzen, wenn Key noch nicht existiert (nicht überschreiben)
         st.session_state.setdefault(self.KEY_LOGGED_IN, False)
         st.session_state.setdefault(self.KEY_USERNAME, "Guest")

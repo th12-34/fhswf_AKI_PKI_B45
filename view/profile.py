@@ -9,7 +9,7 @@ Validierungsmethoden der Authentication-Klasse.
 
 import streamlit as st
 import time
-from config import KEY_USER
+from appconfig import KEY_USER
 from databaseHandler import DatabaseAdministration
 from authentication import Authentication
 

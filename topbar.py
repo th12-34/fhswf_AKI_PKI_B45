@@ -20,7 +20,7 @@ Quellen: Max
 
 import streamlit as st
 from authentication import Authentication
-import config
+import appconfig
 # Setzt direkt bei Instanziierung Default-Werte
 auth = Authentication()
 
@@ -59,8 +59,8 @@ def render_topbar():
         st.markdown(f"## {title}")
 
     with right:
-        logged_in = st.session_state.get(config.KEY_LOGGED_IN, False)
-        username = st.session_state.get(config.KEY_USERNAME, "Guest")
+        logged_in = st.session_state.get(appconfig.KEY_LOGGED_IN, False)
+        username = st.session_state.get(appconfig.KEY_USERNAME, "Guest")
 
         if "show_snow" not in st.session_state:
             st.session_state["show_snow"] = False

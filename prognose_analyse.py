@@ -31,7 +31,7 @@ from gnews import GNews
 from google import genai
 import os
 from databaseHandler import DatabaseAdministration
-import config
+import appconfig
 import logging
 
 class prognose_analyse:
@@ -62,7 +62,7 @@ class prognose_analyse:
         sent_dict['empfehlung'] = ''
         self.sent_dict = sent_dict
         self.user_administration = DatabaseAdministration()
-        self.KEY_USERNAME = config.KEY_USERNAME
+        self.KEY_USERNAME = appconfig.KEY_USERNAME
         
 
     def ticker2Firma(self, tickername):
@@ -159,7 +159,7 @@ class prognose_analyse:
         # 3. Versuch: Wenn noch kein Key da, aus der Datenbank laden
         if not GEMINI_API_KEY:
             # Stelle sicher, dass der Nutzer eingeloggt ist (Key existiert im Session State)
-            username = st.session_state.get(config.KEY_USERNAME)
+            username = st.session_state.get(appconfig.KEY_USERNAME)
             if username:
                 # Nutzt deinen DatabaseAdministration Handler
                 GEMINI_API_KEY = self.user_administration.get_gemini_api_key(username)

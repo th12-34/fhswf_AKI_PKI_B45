@@ -1,263 +1,178 @@
 """
 Seitenname: Portfolio-Ansicht
-
-Autor: 
-
-Datum: 13.01.2026
-
-Beschreibung:
-Dieses Modul verwaltet die visuelle Darstellung der Nutzer-Portfolios. Es bietet
-Funktionen zum Suchen und Hinzufügen von Assets, zur automatischen Währungsumrechnung
-in Euro (via Yahoo Finance FX-Rates) und zur tabellarischen Übersicht der Bestände.
-
-
-Quellen: 
-- Programmierung
-    - https://yfinance.yahoofinance.com/
+Autor: Bastian Pivarcsi
+Datum: 14.01.2026
+Beschreibung: Portfolioverwaltung Barmittel, Aktien und Wertpapiere
 """
 
 import datetime
 import streamlit as st
 import yfinance as yf
-import pandas as pd
+import time
 
-from databaseHandler import DatabaseAdministration
-from portfoliomanager import Portfolio, PortfolioManager
-from authentication import Authentication
-from config import KEY_USER  # Zentrale Konstante nutzen
+# Eigene Module
+from portfoliomanager import PortfolioManager
+from portfolioasset import PortfolioAsset
+import appconfig as config 
 
-# Instanziierung der benötigten Klassen
-ua = DatabaseAdministration()
-auth = Authentication()
+# --- WÄHRUNGS- & API-LOGIK ---
 
-# --- Hilfsfunktionen für Datenabruf und Umrechnung ---
-
-def _fetch_yf_name(symbol: str) -> str | None:
-    """Ruft den Klarnamen eines Wertpapiers von Yahoo Finance ab."""
+@st.cache_data(ttl=3600)
+def get_eur_exchange_rate(from_currency: str):
+    """Holt den aktuellen Wechselkurs zu EUR. Fallback ist 1.0."""
+    if not from_currency or from_currency == "EUR":
+        return 1.0
+    
+    # Sonderfall britische Pence
+    if from_currency == "GBp":
+        try:
+            rate = yf.Ticker("GBPEUR=X").history(period="1d")['Close'].iloc[-1]
+            return rate / 100
+        except: return 0.011 # Grober Fallback
+    
     try:
-        ticker = yf.Ticker(symbol)
-        info = getattr(ticker, "info", {}) or {}
-        return info.get("shortName") or info.get("longName")
-    except Exception:
-        return None
+        ticker_symbol = f"{from_currency}EUR=X"
+        rate = yf.Ticker(ticker_symbol).history(period="1d")['Close'].iloc[-1]
+        return rate
+    except:
+        return 1.0
 
-def _get_ticker_currency(symbol: str) -> str | None:
-    """Liefert die Handelswährung des Symbols (z.B. 'USD', 'EUR')."""
-    try:
-        t = yf.Ticker(symbol)
-        info = getattr(t, "info", {}) or {}
-        return info.get("currency")
-    except Exception:
-        return None
-
-def _convert_to_eur(price: float, currency: str, d: datetime.date) -> float | None:
+@st.cache_data(ttl=600)
+def fetch_live_data(symbol: str):
     """
-    Rechnet einen Preis von einer Fremdwährung in EUR um.
-    Nutzt historische Wechselkurse zum Zeitpunkt des Kaufdatums.
+    Ruft Marktdaten ab. Versucht bei Krypto automatisch -EUR anzuhaengen.
+    Nutzt Fallbacks, falls .info fehlschlaegt.
     """
-    currency = currency.upper()
-    if currency == "EUR":
-        return price
-
-    pair = f"{currency}EUR=X"   # Währungspaar für FX-Kurs
+    if not symbol: return None
+    
+    search_symbol = symbol.strip().upper()
+    # Automatisches Fix fuer bekannte Kryptos ohne Paar
+    if search_symbol in ["BTC", "ETH", "SOL", "XRP", "ADA"]:
+        search_symbol = f"{search_symbol}-EUR"
 
     try:
-        end = d + datetime.timedelta(days=1)
-        start = d - datetime.timedelta(days=7)
+        ticker = yf.Ticker(search_symbol)
+        info = ticker.info
+        
+        # Preis-Ermittlung mit mehreren Fallbacks (wichtig fuer BTC)
+        price = info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose")
+        
+        if price is None:
+            # Wenn .info leer ist (oft bei Krypto), nutze history
+            hist = ticker.history(period="1d")
+            if not hist.empty:
+                price = hist['Close'].iloc[-1]
+        
+        if price is None: return None
+            
+        currency = info.get("currency", "EUR")
+        rate = get_eur_exchange_rate(currency)
+        price_in_eur = float(price) * rate
 
-        data = yf.download(pair, start=start, end=end, interval="1d", progress=False)
+        # Typ-Zuordnung
+        raw_type = info.get("quoteType", "").upper()
+        if raw_type == "CRYPTOCURRENCY" or "-EUR" in search_symbol or "-USD" in search_symbol:
+            a_type = "crypto"
+        else:
+            a_type = "stock"
 
-        if data is None or data.empty:
-            return None
-
-        # Zeitzonen entfernen für Vergleichbarkeit
-        if isinstance(data.index, pd.DatetimeIndex) and data.index.tz is not None:
-            data.index = data.index.tz_convert(None)
-
-        target = datetime.datetime.combine(d, datetime.time(0, 0))
-        data_before = data[data.index <= target]
-
-        rate = float(data_before["Close"].iloc[-1]) if not data_before.empty else float(data["Close"].iloc[0])
-        return price * rate
-    except Exception:
+        return {
+            "name": info.get("shortName") or info.get("longName") or search_symbol,
+            "price_eur": float(price_in_eur),
+            "type": a_type,
+            "currency": currency,
+            "symbol": search_symbol
+        }
+    except:
         return None
-
-def _infer_asset_type(symbol: str, quote_type: str | None = None) -> str:
-    """Bestimmt automatisch, ob es sich um eine Aktie oder Kryptowährung handelt."""
-    if quote_type:
-        qt = quote_type.lower()
-        if "crypto" in qt or qt == "cryptocurrency":
-            return "crypto"
-        if qt in ("equity", "etf", "mutualfund", "index", "fund"):
-            return "stock"
-
-    s = symbol.upper()
-    crypto_suffixes = ("-USD", "-USDT", "-EUR", "-BTC")
-    if s.endswith(crypto_suffixes) or s in {"BTC", "ETH", "SOL", "XRP", "ADA", "DOGE"}:
-        return "crypto"
-    return "stock"
-
-def _fetch_price_for_date(symbol: str, d: datetime.date) -> float | None:
-    """Ruft den historischen Schlusskurs eines Symbols für ein bestimmtes Datum ab."""
-    try:
-        end = d + datetime.timedelta(days=1)
-        start = d - datetime.timedelta(days=30)
-        data = yf.download(symbol, start=start, end=end, interval="1d", progress=False)
-
-        if data is None or data.empty:
-            return None
-
-        if isinstance(data.index, pd.DatetimeIndex) and data.index.tz is not None:
-            data.index = data.index.tz_convert(None)
-
-        target = datetime.datetime.combine(d, datetime.time(0, 0))
-        data_before = data[data.index <= target]
-
-        return float(data_before["Close"].iloc[-1]) if not data_before.empty else float(data["Close"].iloc[0])
-    except Exception:
-        return None
-
-# --- Hauptansicht ---
 
 def show_view_page():
-    """Rendert die Portfolio-Übersicht und die Verwaltung der Assets."""
-    
-    # Nutzerprüfung
-    user = st.session_state.get(KEY_USER)
+    user = st.session_state.get(config.KEY_USER)
     if not user: 
-        st.warning("Bitte logge dich ein.")
+        st.warning("Bitte anmelden.")
         return
 
-    # Portfolio-Manager initialisieren
     if "manager" not in st.session_state:
         st.session_state.manager = PortfolioManager(user["username"])
     
     manager = st.session_state.manager
-
-    # Portfolios des Nutzers laden
     portfolios = manager.getPortfolios()
+    
     if not portfolios:
-        st.info("Keine Portfolios gefunden. Bitte erstelle zuerst ein Portfolio.")
+        st.title("Portfolio Bestaende")
         return
 
-    # Auswahl-UI
-    labels = [f"{p[0]} – {p[1]}" for p in portfolios]
-    id_by_label = {label: p[0] for label, p in zip(labels, portfolios)}
-
-    selected_label = st.selectbox("Wähle ein Portfolio", labels)
-    selected_portfolio_id = id_by_label[selected_label]
+    # --- 2. HEADER & PORTFOLIO-WAHL ---
+    st.title("Portfolio Verwaltung")
+    id_to_label_map = {p[0]: f"{i}. {p[1]}" for i, p in enumerate(portfolios, start=1)}
     
-    manager.selectPortfolioId(selected_portfolio_id)
-
-    # Anzeige des Gesamtwerts
-    if manager.currentPortfolio:
-        total_val = manager.currentPortfolio.get_total_value()
-        st.metric("Gesamtwert (EUR)", f"{total_val:,.2f} €")
-
-    # --- Bereich: Asset hinzufügen ---
-    with st.expander("Neues Asset hinzufügen", expanded=False):
-
-        if "reset_nonce" not in st.session_state:
-            st.session_state["reset_nonce"] = 0
-
-        query = st.text_input("Suche nach Aktie oder Krypto", key=f"asset_search_query_{st.session_state.reset_nonce}")
-        selected_symbol = None
-
-        if "show_form" not in st.session_state:
-            st.session_state["show_form"] = False
-        
-        def reset_all():
-            """Setzt die Eingabemaske nach erfolgreichem Hinzufügen zurück."""
-            keys_to_pop = ["asset_symbol_input", "amount_input", "price_mode_input", 
-                           "manual_price_input", "date_input", "asset_choice"]
-            for k in keys_to_pop:
-                st.session_state.pop(k, None)
-            st.session_state.show_form = False
-            st.session_state.reset_nonce += 1
-            st.rerun()
-
-        # Suchlogik
-        if query:
-            try:
-                result = yf.Search(query, max_results=5)
-                options = [f"{q['symbol']} – {q.get('shortname', 'N/A')}" for q in result.quotes]
-                if options:
-                    choice = st.selectbox("Vorschläge", ["--- Bitte wählen ---"] + options)
-                    if choice != "--- Bitte wählen ---":
-                        selected_symbol = choice.split(" – ")[0]
-                        st.session_state["asset_symbol_input"] = selected_symbol
-                        st.session_state["show_form"] = True
-            except Exception as e:
-                st.error(f"Suche fehlgeschlagen: {e}")
-
-        # Formular-Anzeige
-        if st.session_state["show_form"]:
-            with st.form("add_asset_form"):
-                asset_symbol_val = st.text_input("Symbol", key="asset_symbol_input")
-                amount_val = st.number_input("Menge", min_value=0.0, step=0.01, key="amount_input")
-                date = st.date_input("Kaufdatum", value=datetime.date.today(), key="date_input")
-                preis_modus = st.radio("Preisermittlung", ["Automatisch", "Manuell"], key="price_mode_input")
-                manual_price = st.number_input("Preis pro Einheit (EUR)", min_value=0.0, key="manual_price_input")
-                
-                submit = st.form_submit_button("Hinzufügen")
-
-                if submit:
-                    if not asset_symbol_val or amount_val <= 0:
-                        st.error("Bitte Symbol und Menge prüfen.")
-                    else:
-                        # Preis-Logik (Auto/Manuell)
-                        if preis_modus == "Automatisch":
-                            price_in_ccy = _fetch_price_for_date(asset_symbol_val, date)
-                            ccy = _get_ticker_currency(asset_symbol_val) or "EUR"
-                            price_eur = _convert_to_eur(price_in_ccy, ccy, date)                
-                        else:
-                            price_eur = manual_price
-
-                        if price_eur:
-                            from portfolioasset import PortfolioAsset
-                            new_asset = PortfolioAsset(
-                                portfolio_id=selected_portfolio_id,
-                                asset_type=_infer_asset_type(asset_symbol_val),
-                                asset_symbol=asset_symbol_val,
-                                asset_name=_fetch_yf_name(asset_symbol_val),
-                                amount=amount_val,
-                                buy_price=price_eur,
-                                bought_at=date.strftime("%Y-%m-%d")
-                            )
-                            
-                            if manager.addAssetToPortfolio(new_asset):
-                                st.success(f"{asset_symbol_val} erfolgreich hinzugefügt!")
-                                reset_all()
-                            else:
-                                st.error("Fehler beim Speichern in der Datenbank.")
-                        else:
-                            st.error("Preis konnte nicht ermittelt werden (Netzwerkfehler?).")
+    selected_id = st.selectbox(
+        "Portfolio waehlen",
+        options=list(id_to_label_map.keys()),
+        format_func=lambda x: id_to_label_map[x]
+    )
     
+    manager.selectPortfolioId(selected_id)
+    total_val = manager.currentPortfolio.get_total_value() if manager.currentPortfolio else 0.0
+    st.metric("Gesamtwert", f"{total_val:,.2f} EUR")
     st.divider()
 
-    # --- Bereich: Übersichtstabelle ---
-    st.subheader("Aktuelle Assets")
+    # --- 3. EINGABEMASKE ---
+    tab_assets, tab_cash = st.tabs(["Wertpapiere und Krypto", "Barmittel"])
 
+    with tab_assets:
+        query = st.text_input("Ticker-Symbol (z.B. BTC, MSTR, AAPL)", key="search_input").strip()
+        if query:
+            data = fetch_live_data(query)
+            if data:
+                # Info-Box bei Umrechnung
+                if data['currency'] != "EUR":
+                    st.info(f"Originalwaehrung: {data['currency']}. Der Preis wurde automatisch in EUR umgerechnet.")
+                
+                with st.form("add_asset_f", clear_on_submit=True):
+                    st.write(f"Asset gefunden: **{data['name']}**")
+                    c1, c2 = st.columns(2)
+                    qty = c1.number_input("Menge", min_value=0.0, format="%.6f")
+                    price = c2.number_input("Kaufpreis in EUR", value=data['price_eur'], format="%.2f")
+                    
+                    if st.form_submit_button("Speichern", use_container_width=True):
+                        if qty > 0:
+                            new_asset = PortfolioAsset(selected_id, data['type'], data['symbol'], 
+                                                       data['name'], float(qty), float(price), 
+                                                       datetime.date.today().strftime("%Y-%m-%d"))
+                            manager.addAssetToPortfolio(new_asset)
+                            st.success("Erfolgreich hinzugefuegt.")
+                            time.sleep(0.5)
+                            st.rerun()
+            else:
+                st.error("Symbol konnte nicht gefunden werden. Bitte Ticker prüfen.")
+
+    with tab_cash:
+        with st.form("c_form", clear_on_submit=True):
+            val = st.number_input("Euro-Betrag", min_value=0.0)
+            if st.form_submit_button("Barmittel buchen"):
+                cash_asset = PortfolioAsset(selected_id, "cash", "EUR", "Barmittel", float(val), 1.0, datetime.date.today().strftime("%Y-%m-%d"))
+                manager.addAssetToPortfolio(cash_asset)
+                st.rerun()
+
+    # --- 4. TABELLE ---
     if manager.currentPortfolio and manager.currentPortfolio.assets:
-        # Tabellen-Header
-        header = st.columns([1, 2, 1, 1, 1, 1])
-        headers = ["Symbol", "Name", "Typ", "Menge", "Preis (EUR)", "Aktion"]
-        for col, h_text in zip(header, headers):
-            col.markdown(f"**{h_text}**")
+        st.subheader("Aktuelle Positionen")
+        cols_h = st.columns([0.8, 1.5, 0.7, 1, 1, 1, 1.2, 0.8])
+        labels = ["Symbol", "Name", "Typ", "Menge", "Kurs", "Datum", "Wert", "Aktion"]
+        for col, label in zip(cols_h, labels):
+            col.write(f"**{label}**")
         st.divider()
 
-        # Zeilenweise Anzeige
-        for asset in manager.currentPortfolio.assets:
-            cols = st.columns([1, 2, 1, 1, 1, 1])
-            cols[0].write(asset.symbol)
-            cols[1].write(asset.name or "-")
-            cols[2].caption(asset.type)
-            cols[3].write(f"{asset.amount}")
-            cols[4].write(f"{asset.buy_price:.2f} €")
-            
-            # Löschfunktion über Button-Key-Bindung
-            if cols[5].button("🗑️", key=f"del_{asset.asset_id}"):
-                if manager.deleteAsset(asset.asset_id):
-                    st.rerun()
-    else:
-        st.info("Noch keine Assets in diesem Portfolio.")
+        for idx, asset in enumerate(manager.currentPortfolio.assets):
+            c = st.columns([0.8, 1.5, 0.7, 1, 1, 1, 1.2, 0.8])
+            c[0].write(asset.symbol)
+            c[1].write(asset.name)
+            c[2].caption(asset.type.upper())
+            c[3].write("-" if asset.type == "cash" else f"{asset.amount:g}")
+            c[4].write("-" if asset.type == "cash" else f"{asset.buy_price:,.2f} EUR")
+            c[5].write(asset.bought_at)
+            c[6].write(f"**{asset.get_total_value():,.2f} EUR**")
+            if c[7].button("Loeschen", key=f"del_{idx}"):
+                manager.deleteAsset(asset.asset_id)
+                st.rerun()

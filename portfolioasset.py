@@ -31,7 +31,8 @@ class PortfolioAsset:
         amount: float,
         buy_price: float,          
         bought_at: str,
-        currency: str = "EUR"
+        currency: str = "EUR",
+        asset_id: int | None = None  # NEU: Optionale ID am Ende
     ):
         """
         Initialisiert ein PortfolioAsset-Objekt.
@@ -54,6 +55,7 @@ class PortfolioAsset:
         self.buy_price = buy_price
         self.bought_at = bought_at
         self.currency = currency
+        self.asset_id = asset_id
 
     def get_total_value(self) -> float:
         """
