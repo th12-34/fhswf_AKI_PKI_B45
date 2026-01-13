@@ -1,17 +1,28 @@
+"""
+Programmname: Hauptseitenverwaltung
+Autor: Bastian Pivarcsi
+Datum: 13.01.2026
+Beschreibung:
+Zentrales Einstiegsskript für die Streamlit-Applikation. Verwaltet die Seitennavigation,
+die Authentifizierungswiederherstellung und das Layout der Topbar.
+"""
+
 import streamlit as st
 from topbar import render_topbar
-# pages Ordner würde die standardmäßige Sidebar kurz zuerst laden
 from view.dashboard import show_dashboard
 from view.portfolio_view import show_view_page 
-from view.portfolios_manage import show_manage_page    
+from view.portfolios_manage import show_manage_page
+from view.profile import show_profile_page
 from authentication import Authentication 
 
+# --- Konfiguration ---
 st.set_page_config(
     page_title="Mein Finanz-Dashboard",
     layout="wide", 
     initial_sidebar_state="expanded"
-    )
+)
 
+# CSS zur Optimierung des Headers und Paddings
 # Damit könnte man den Header mit den Default Streamlit Optionen oben rechts deaktiveren, dann kann man aber die seitliche Navigationsleiste nicht mehr aufklappen
 st.markdown("""
 <style>
@@ -28,6 +39,7 @@ header[data-testid="stHeader"] * {
 </style>
 """, unsafe_allow_html=True)
 
+# --- Page Wrapper Funktionen ---
 
 def dashboard_page():
     st.session_state["page_key"] = "Analyse"
@@ -44,24 +56,33 @@ def portfolio_view_page():
     render_topbar()
     show_view_page()
 
+def profile_page():
+    """Wrapper für die Profil-Einstellungen."""
+    st.session_state["page_key"] = "Profil"
+    render_topbar()
+    show_profile_page()
+
+# --- Hauptprogramm ---
 
 def main():
-
-    # Nach Start / Reload prüfen, ob bereits eine Session aktiv ist (Login)
+    # Nach Start / Reload prüfen, ob bereits eine Session aktiv ist
     auth = Authentication()
     auth.restore_session()
 
-    # dedizierter pages Ordner nicht notwendig
     pages = {
-        "Overview":[
+        "Overview": [
             st.Page(dashboard_page, title="Analyse", url_path="dashboard"),
         ],
         "Portfolios": [
             st.Page(portfolios_manage_page, title="Verwaltung", url_path="portfolios-manage"),
             st.Page(portfolio_view_page, title="Ansicht", url_path="portfolio-view"),
         ],
+        "Benutzer": [
+            st.Page(profile_page, title="Profil", url_path="profile"),
+        ]
     }
 
+    # Navigation initialisieren und ausführen
     pg = st.navigation(pages, position="sidebar")
     pg.run()
 
