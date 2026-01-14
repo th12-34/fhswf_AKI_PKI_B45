@@ -1,7 +1,7 @@
 """
 Seitenname: Dashboard
 
-Autor: 
+Autor: x / Maximilian Pfau
 
 Datum: 13.01.2026
 
@@ -16,6 +16,7 @@ Quellen:
 - Programmierung
     - https://plotly.com/python/
     - https://yfinance.yahoofinance.com/
+    - ChatGPT 5.2
 """
 
 import streamlit as st

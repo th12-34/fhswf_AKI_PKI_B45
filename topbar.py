@@ -1,7 +1,7 @@
 """
 Programmname: UI_Components
 
-Autor: 
+Autor: Maximilian Pfau
 
 Datum: 13.01.2026
 
@@ -11,11 +11,11 @@ die Topbar mit integrierter Login- und Registrierungslogik sowie das Handling
 von Statusmeldungen.
 
 
-Quellen: Max
+Quellen:
 - Programmierung
     - Lehrbrief zur Vorlesung
-    - ChatGPT
     - https://docs.streamlit.io/develop/api-reference/widgets/st.popover
+    - ChatGPT 5.2
 """
 
 import streamlit as st

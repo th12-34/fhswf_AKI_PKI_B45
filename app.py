@@ -1,10 +1,19 @@
 """
 Programmname: Hauptseitenverwaltung
-Autor: Bastian Pivarcsi
+
+Autor: Bastian Pivarcsi / Maximilian Pfau
+
 Datum: 13.01.2026
+
 Beschreibung:
 Zentrales Einstiegsskript für die Streamlit-Applikation. Verwaltet die Seitennavigation,
 die Authentifizierungswiederherstellung und das Layout der Topbar.
+
+Quellen:
+- Programmierung
+    - Lehrbrief zur Vorlesung
+    - https://docs.streamlit.io/develop/api-reference/navigation/st.page st.navigation
+    - ChatGPT 5.2
 """
 
 import streamlit as st

@@ -1,10 +1,20 @@
 """
 Programmname: Authentication
-Autor: Max
+
+Autor: Maximilian Pfau
+
 Datum: 13.01.2026
+
 Beschreibung:
 Verwaltet Benutzer-Sitzungen und Validierung. Nutzt zentrale Methoden zur
 Prüfung von E-Mail-Syntax und Passwortstärke.
+
+
+Quellen: 
+- Programmierung
+    - Lehrbrief zur Vorlesung
+    - https://docs.streamlit.io/develop/api-reference/caching-and-state/st.session_state
+    - ChatGPT 5.2
 """
 
 import streamlit as st
