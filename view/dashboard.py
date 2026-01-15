@@ -30,6 +30,11 @@ from datetime import datetime
 # --- Indikatoren ---
 # Indikator Gleitender Durchschnitt Optionen
 MA_WINDOWS = [20, 50, 200]
+MA_COLORS = {
+    20:  "#cb1e2d",
+    50:  "#2ca02c",
+    200: "#9467bd",
+}
 
 def indicator_toogles(windows: list[int]) -> dict[int, bool]:
     """
@@ -61,7 +66,8 @@ def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
             x=data.index,
             y=ma,
             mode="lines",
-            name=f"MA{w}"
+            name=f"MA{w}",
+            line=dict(color=MA_COLORS.get(w, None), width=2)
         ))
 
 def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
@@ -286,7 +292,8 @@ def show_dashboard():
             x=data.index,
             y=data["Close"],
             mode="lines",
-            name="Close"
+            name="Close",
+            line=dict(color="black", width=2)
         ))
 
         fig.update_layout(
@@ -307,15 +314,34 @@ def show_dashboard():
             x=data.index,
             y=rsi,
             mode="lines",
-            name="RSI (14)"
+            name="RSI (14)",
+            line=dict(color="black", width=2)
         ))
 
-        fig_rsi.add_hline(y=70, line_dash="dash")
-        fig_rsi.add_hline(y=30, line_dash="dash")
+        # Überkauft (>70) – rot
+        fig_rsi.add_hrect(
+            y0=70,
+            y1=100,
+            fillcolor="red",
+            opacity=0.05,
+            line_width=0
+        )
+
+        # Überverkauft (<30) – grün
+        fig_rsi.add_hrect(
+            y0=0,
+            y1=30,
+            fillcolor="green",
+            opacity=0.05,
+            line_width=0
+        )
+
+        #fig_rsi.add_hline(y=70, line_dash="dash")
+        #fig_rsi.add_hline(y=30, line_dash="dash")
 
         fig_rsi.update_layout(
             template="plotly_dark",
-            height=250,
+            height=500,
             yaxis_title="RSI",
             yaxis=dict(range=[0, 100])
         )
@@ -324,13 +350,15 @@ def show_dashboard():
 
         # --- Chart MACD ---
         st.markdown("**Moving Average Convergene/Divergence**")
+        
         macd, signal_line, hist = compute_macd(data["Close"])
 
         fig_macd = go.Figure()
         fig_macd.add_trace(go.Bar(
             x=data.index,
             y=hist,
-            name="Histogramm"
+            name="Histogramm",
+            opacity=0.8
         ))
         fig_macd.add_trace(go.Scatter(
             x=data.index,
@@ -347,10 +375,10 @@ def show_dashboard():
 
         fig_macd.update_layout(
             template="plotly_dark",
-            height=250,
+            height=500,
             yaxis_title="MACD"
         )
-
+        
         st.plotly_chart(fig_macd, width="stretch")
 
         # --- Prognose und Analyse ----
