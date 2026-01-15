@@ -199,6 +199,10 @@ def show_dashboard():
                     if st.session_state.get("selected_symbol") != selected_symbol_code:
                         st.session_state["selected_symbol"] = selected_symbol_code
                         st.session_state["data"] = None
+
+                        st.session_state["prog_result"] = None
+                        st.session_state["run_prog"] = True
+
                         st.rerun()
 
             else:
@@ -382,58 +386,56 @@ def show_dashboard():
         st.plotly_chart(fig_macd, width="stretch")
 
         # --- Prognose und Analyse ----
-        with st.expander("Prognose und Analyse"):
+        with st.expander("Prognose und Analyse", expanded=True):
             col1, col2 = st.columns(2)
 
-            if st.button("Prognose und Analyse ausführen"):
-                prog_ana_data.update(symbol)
+            # Platzhalter (werden sofort gerendert)
+            ph_chart = col1.empty()
+            ph_text  = col2.empty()
 
-                with st.spinner('Prognose und Analyse läuft...'):                   
-                    with col1:
-                        st.subheader("Prognose Kursentwicklung")
-                        progdata, predictions, pred_days = prog_ana_data.get_prediction()
+            symbol = st.session_state.get("symbol")
 
-                        figProg = go.Figure()
-                        figProg.add_trace(go.Scatter(
-                                x = progdata.index,
-                                y = progdata[symbol].values,
-                                mode="lines",
-                                name="Historie"))
-    
-                        figProg.add_trace(go.Scatter(
-                                x = pred_days,
-                                y = predictions,
-                                mode="lines",
-                                name="Vorhersage"))
-                        
-                        figProg.add_trace(go.Scatter(
-                                x = [progdata.index[0], pred_days[-1]],
-                                y = [predictions[-1], predictions[-1]],
-                                mode="lines",
-                                name="Kursziel"))
-                        
-                        figProg.update_layout(
-                            title="Kursentwicklung und Vorhersage",
-                            xaxis_title="Datum",
-                            yaxis_title="Kurs",
-                            legend_title="Legende",
-                            template="plotly_dark",
-                        )
-                        st.plotly_chart(figProg, width='stretch')
+            # 1) Wenn noch kein Ergebnis da ist: Platzhalter zeigen
+            if st.session_state.get("prog_result") is None:
+                ph_chart.info("Prognose wird vorbereitet …")
+                ph_text.info("Sentiment wird vorbereitet …")
 
-                    with col2:
-                        st.subheader("News-basierte Handlungsempfehlung:")
-                        empfehlung, news = prog_ana_data.get_sentiment()
-                                           
-                        st.markdown(
-                            f"""
-                            <div style="text-align: center; margin-top: 50px; font-size: 24px;">
-                                {empfehlung}
-                            </div>
-                            """, unsafe_allow_html=True)
-                        st.markdown(
-                            f"""
-                            <div style="text-align: center; margin-top: 50px; font-size: 12px;">
-                                {news}
-                            </div>
-                            """, unsafe_allow_html=True)
+            # 2) Automatisch starten, sobald Flag gesetzt ist
+            if st.session_state.get("run_prog") and symbol:
+                with st.spinner("Prognose und Analyse läuft …"):
+                    prog_ana_data.update(symbol)
+
+                    progdata, predictions, pred_days = prog_ana_data.get_prediction()
+                    empfehlung, news = prog_ana_data.get_sentiment()
+
+                    st.session_state["prog_result"] = (progdata, predictions, pred_days, empfehlung, news)
+                    st.session_state["run_prog"] = False
+
+                st.rerun()  # sorgt dafür, dass danach ohne Spinner sauber gerendert wird
+
+            # 3) Ergebnis rendern, wenn vorhanden
+            if st.session_state.get("prog_result") is not None:
+                progdata, predictions, pred_days, empfehlung, news = st.session_state["prog_result"]
+
+                with col1:
+                    st.subheader("Prognose Kursentwicklung")
+                    figProg = go.Figure()
+                    figProg.add_trace(go.Scatter(x=progdata.index, y=progdata[symbol].values, mode="lines", name="Historie"))
+                    figProg.add_trace(go.Scatter(x=pred_days, y=predictions, mode="lines", name="Vorhersage"))
+                    figProg.add_trace(go.Scatter(x=[progdata.index[0], pred_days[-1]],y=[predictions[-1], predictions[-1]],mode="lines",name="Kursziel"))
+                    figProg.update_layout(template="plotly_dark", title="Kursentwicklung und Vorhersage",
+                                        xaxis_title="Datum", yaxis_title="Kurs")
+                    st.plotly_chart(figProg, width="stretch")
+
+                with col2:
+                    st.subheader("News-basierte Handlungsempfehlung")
+                    st.markdown(f"<div style='text-align:center;margin-top:30px;font-size:24px;'>{empfehlung}</div>",
+                                unsafe_allow_html=True)
+                    st.markdown(f"<div style='text-align:center;margin-top:20px;font-size:12px;'>{news}</div>",
+                                unsafe_allow_html=True)
+            
+            st.divider()
+            if st.button("Prognose neu berechnen", use_container_width=True):
+                st.session_state["prog_result"] = None
+                st.session_state["run_prog"] = True
+                st.rerun()
