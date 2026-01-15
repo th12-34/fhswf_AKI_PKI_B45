@@ -303,12 +303,12 @@ def show_dashboard():
                 y=data["Close"],
                 mode="lines",
                 name="Close",
-                line=dict(color="black", width=2),
+                #line=dict(color="black", width=2),
             )
         )
 
         fig.update_layout(
-            title=f"{symbol} Schlusskurse", template="plotly_dark", height=500
+            title=f"{symbol} Schlusskurse", template="streamlit", height=500
         )
 
         add_ma_traces(fig, data, enabled)
@@ -325,21 +325,21 @@ def show_dashboard():
                 y=rsi,
                 mode="lines",
                 name="RSI (14)",
-                line=dict(color="black", width=2),
+                #line=dict(color="black", width=2),
             )
         )
 
         # Überkauft (>70) – rot
-        fig_rsi.add_hrect(y0=70, y1=100, fillcolor="red", opacity=0.05, line_width=0)
+        fig_rsi.add_hrect(y0=70, y1=100, fillcolor="rgba(255, 80, 80, 0.22)", line_width=0)
 
         # Überverkauft (<30) – grün
-        fig_rsi.add_hrect(y0=0, y1=30, fillcolor="green", opacity=0.05, line_width=0)
+        fig_rsi.add_hrect(y0=0, y1=30, fillcolor="rgba(80, 255, 140, 0.22)", line_width=0)
 
         # fig_rsi.add_hline(y=70, line_dash="dash")
         # fig_rsi.add_hline(y=30, line_dash="dash")
 
         fig_rsi.update_layout(
-            template="plotly_dark",
+            template="streamlit",
             height=500,
             yaxis_title="RSI",
             yaxis=dict(range=[0, 100]),
