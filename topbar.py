@@ -21,8 +21,10 @@ Quellen:
 import streamlit as st
 from authentication import Authentication
 import appconfig
+
 # Setzt direkt bei Instanziierung Default-Werte
 auth = Authentication()
+
 
 def _render_auth_messages_for(auth: Authentication, action: str) -> None:
     """
@@ -42,6 +44,7 @@ def _render_auth_messages_for(auth: Authentication, action: str) -> None:
         st.error(err)
     elif info:
         st.info(info)
+
 
 def render_topbar():
     """
@@ -83,7 +86,7 @@ def render_topbar():
                 "auth_tab_selector",
                 options=["Login", "Registration"],
                 key="auth_tab",
-                label_visibility="collapsed"
+                label_visibility="collapsed",
             )
 
             # Login Bereich
@@ -101,34 +104,32 @@ def render_topbar():
             # Registrierung Bereich
             else:
                 rusername = st.text_input(
-                    "Benutzername", 
+                    "Benutzername",
                     key="reg_user",
-                    help="Mindestens 3 Zeichen. Keine Leerzeichen."
+                    help="Mindestens 3 Zeichen. Keine Leerzeichen.",
                 )
                 remail = st.text_input(
-                    "E-Mail", 
-                    key="reg_email",
-                    help="Beispiel: name@domain.de"
+                    "E-Mail", key="reg_email", help="Beispiel: name@domain.de"
                 )
                 rpassword = st.text_input(
-                    "Passwort", 
-                    type="password", 
+                    "Passwort",
+                    type="password",
                     key="reg_pw",
-                    help="Mindestens 6 Zeichen."
+                    help="Mindestens 6 Zeichen.",
                 )
                 # NEU: Eingabefeld für den Gemini API Key
                 rgemini = st.text_input(
-                    "Gemini API Key", 
-                    type="password", 
+                    "Gemini API Key",
+                    type="password",
                     key="reg_gemini",
-                    help="Dein persönlicher API Key von Google AI Studio."
+                    help="Dein persönlicher API Key von Google AI Studio.",
                 )
-                
+
                 if st.button("Neuen Account erstellen"):
                     st.session_state["last_auth_action"] = "register"
                     # Aufruf der erweiterten Register-Funktion
                     success = auth.register(rusername, remail, rpassword, rgemini)
                     if success:
                         st.rerun()
-                
+
                 _render_auth_messages_for(auth, "register")

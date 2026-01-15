@@ -6,7 +6,7 @@ Autor: Bastian Pivarcsi
 Datum: 13.01.2026
 
 Beschreibung:
-Zentrale Konfigurationsdatei für Session-State-Keys und globale 
+Zentrale Konfigurationsdatei für Session-State-Keys und globale
 Einstellungen, um Konsistenz über alle Module hinweg zu gewährleisten.
 """
 

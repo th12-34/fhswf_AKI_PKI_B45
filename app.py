@@ -19,21 +19,20 @@ Quellen:
 import streamlit as st
 from topbar import render_topbar
 from view.dashboard import show_dashboard
-from view.portfolio_view import show_view_page 
+from view.portfolio_view import show_view_page
 from view.portfolios_manage import show_manage_page
 from view.profile import show_profile_page
-from authentication import Authentication 
+from authentication import Authentication
 
 # --- Konfiguration ---
 st.set_page_config(
-    page_title="Mein Finanz-Dashboard",
-    layout="wide", 
-    initial_sidebar_state="expanded"
+    page_title="Mein Finanz-Dashboard", layout="wide", initial_sidebar_state="expanded"
 )
 
 # CSS zur Optimierung des Headers und Paddings
 # Damit könnte man den Header mit den Default Streamlit Optionen oben rechts deaktiveren, dann kann man aber die seitliche Navigationsleiste nicht mehr aufklappen
-st.markdown("""
+st.markdown(
+    """
 <style>
 header[data-testid="stHeader"] {
     height: 0px;
@@ -46,24 +45,30 @@ header[data-testid="stHeader"] * {
     padding-top: 1rem;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Page Wrapper Funktionen ---
+
 
 def dashboard_page():
     st.session_state["page_key"] = "Analyse"
     render_topbar()
     show_dashboard()
 
+
 def portfolios_manage_page():
     st.session_state["page_key"] = "Portfolio-Verwaltung"
     render_topbar()
     show_manage_page()
 
+
 def portfolio_view_page():
     st.session_state["page_key"] = "Portfolio-Ansicht"
     render_topbar()
     show_view_page()
+
 
 def profile_page():
     """Wrapper für die Profil-Einstellungen."""
@@ -71,7 +76,9 @@ def profile_page():
     render_topbar()
     show_profile_page()
 
+
 # --- Hauptprogramm ---
+
 
 def main():
     # Nach Start / Reload prüfen, ob bereits eine Session aktiv ist
@@ -83,12 +90,14 @@ def main():
             st.Page(dashboard_page, title="Analyse", url_path="dashboard"),
         ],
         "Portfolios": [
-            st.Page(portfolios_manage_page, title="Verwaltung", url_path="portfolios-manage"),
+            st.Page(
+                portfolios_manage_page, title="Verwaltung", url_path="portfolios-manage"
+            ),
             st.Page(portfolio_view_page, title="Ansicht", url_path="portfolio-view"),
         ],
         "Benutzer": [
             st.Page(profile_page, title="Profil", url_path="profile"),
-        ]
+        ],
     }
 
     # Navigation initialisieren und ausführen

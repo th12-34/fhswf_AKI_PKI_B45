@@ -6,12 +6,12 @@ Autor: Bastian Pivarcsi
 Datum: 13.01.2026
 
 Beschreibung:
-Diese Klasse dient als zentrale Steuerungseinheit für die Portfolio-Verwaltung 
-eines Nutzers. Sie ermöglicht das Erstellen, Löschen und Auswählen von Portfolios 
+Diese Klasse dient als zentrale Steuerungseinheit für die Portfolio-Verwaltung
+eines Nutzers. Sie ermöglicht das Erstellen, Löschen und Auswählen von Portfolios
 sowie das Management von Assets innerhalb des aktuell ausgewählten Portfolios.
 
 
-Quellen: 
+Quellen:
 - Programmierung
     - Lehrbrief zur Vorlesung
 """
@@ -20,7 +20,8 @@ from databaseHandler import DatabaseAdministration
 from portfolioasset import PortfolioAsset
 from portfolio import Portfolio
 
-class PortfolioManager():
+
+class PortfolioManager:
     """
     Verwaltet die Interaktion zwischen dem Nutzer, seinen Portfolios und der Datenbank.
     """
@@ -91,14 +92,16 @@ class PortfolioManager():
         :return: -
         """
         if self.currentPortfolio:
-            self.handler.add_asset(self.currentPortfolio.id,
-                                   asset.type,
-                                   asset.symbol,
-                                   asset.name,
-                                   asset.amount,
-                                   asset.buy_price,
-                                   asset.bought_at,
-                                   asset.currency)
+            self.handler.add_asset(
+                self.currentPortfolio.id,
+                asset.type,
+                asset.symbol,
+                asset.name,
+                asset.amount,
+                asset.buy_price,
+                asset.bought_at,
+                asset.currency,
+            )
             # Ansicht nach dem Hinzufügen aktualisieren
             self.currentPortfolio.load_assets()
         else:
@@ -113,7 +116,7 @@ class PortfolioManager():
         """
         if self.currentPortfolio:
             success = self.handler.delete_asset(asset_id)
-            
+
             if success:
                 self.currentPortfolio.load_assets()
                 return True

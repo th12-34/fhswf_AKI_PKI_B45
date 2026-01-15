@@ -6,16 +6,17 @@ Autor: Bastian Pivarcsi
 Datum: 13.01.2026
 
 Beschreibung:
-Diese Klasse repräsentiert ein einzelnes Asset (z. B. eine Aktie oder eine 
-Kryptowährung) innerhalb eines Portfolios. Sie speichert alle relevanten 
+Diese Klasse repräsentiert ein einzelnes Asset (z. B. eine Aktie oder eine
+Kryptowährung) innerhalb eines Portfolios. Sie speichert alle relevanten
 Kaufdaten und bietet Funktionen zur Berechnung des Positionswerts.
 
 
-Quellen: 
+Quellen:
 - Programmierung
     - Lehrbrief zur Vorlesung
     - https://docs.python.org/3/tutorial/classes.html
 """
+
 
 class PortfolioAsset:
     """
@@ -29,10 +30,10 @@ class PortfolioAsset:
         asset_symbol: str,
         asset_name: str | None,
         amount: float,
-        buy_price: float,          
+        buy_price: float,
         bought_at: str,
         currency: str = "EUR",
-        asset_id: int | None = None  # NEU: Optionale ID am Ende
+        asset_id: int | None = None,  # NEU: Optionale ID am Ende
     ):
         """
         Initialisiert ein PortfolioAsset-Objekt.

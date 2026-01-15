@@ -6,13 +6,13 @@ Autor: x / Maximilian Pfau
 Datum: 13.01.2026
 
 Beschreibung:
-Dieses Modul bildet das Herzstück der Benutzeroberfläche. Es ermöglicht die Suche 
-nach Wertpapieren über Yahoo Finance, visualisiert historische Kursdaten inklusive 
-technischer Indikatoren (MA, RSI, MACD) und integriert die KI-basierte Prognose 
+Dieses Modul bildet das Herzstück der Benutzeroberfläche. Es ermöglicht die Suche
+nach Wertpapieren über Yahoo Finance, visualisiert historische Kursdaten inklusive
+technischer Indikatoren (MA, RSI, MACD) und integriert die KI-basierte Prognose
 sowie Sentiment-Analyse.
 
 
-Quellen: 
+Quellen:
 - Programmierung
     - https://plotly.com/python/
     - https://yfinance.yahoofinance.com/
@@ -31,10 +31,11 @@ from datetime import datetime
 # Indikator Gleitender Durchschnitt Optionen
 MA_WINDOWS = [20, 50, 200]
 MA_COLORS = {
-    20:  "#cb1e2d",
-    50:  "#2ca02c",
+    20: "#cb1e2d",
+    50: "#2ca02c",
     200: "#9467bd",
 }
+
 
 def indicator_toogles(windows: list[int]) -> dict[int, bool]:
     """
@@ -42,9 +43,9 @@ def indicator_toogles(windows: list[int]) -> dict[int, bool]:
     """
     cols = st.columns(len(windows))
     return {
-        w: cols[i].toggle(f"MA{w}", key=f"show_ma_{w}")
-        for i, w in enumerate(windows)
+        w: cols[i].toggle(f"MA{w}", key=f"show_ma_{w}") for i, w in enumerate(windows)
     }
+
 
 def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
     """
@@ -59,16 +60,19 @@ def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
         if len(close) < w:
             st.info(f"MA{w}: mindestens {w} Datenpunkte nötig (aktuell {len(close)}).")
             continue
-        
+
         # Gleitender Durchschnitt berechnen
         ma = close.rolling(window=w, min_periods=w).mean()
-        fig.add_trace(go.Scatter(
-            x=data.index,
-            y=ma,
-            mode="lines",
-            name=f"MA{w}",
-            line=dict(color=MA_COLORS.get(w, None), width=2)
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=data.index,
+                y=ma,
+                mode="lines",
+                name=f"MA{w}",
+                line=dict(color=MA_COLORS.get(w, None), width=2),
+            )
+        )
+
 
 def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
     """
@@ -85,6 +89,7 @@ def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
+
 def compute_macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9):
     """
     Berechnet den MACD-Indikator.
@@ -98,7 +103,9 @@ def compute_macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int =
 
     return macd, signal_line, hist
 
+
 # -------------------------------
+
 
 def load_data(symbol, period, interval):
     """
@@ -113,25 +120,18 @@ def load_data(symbol, period, interval):
             now = datetime.now()
             start = datetime(now.year, 1, 1)
             data = yf.download(
-                symbol,
-                start=start,
-                end=now,
-                interval=interval,
-                progress=False
+                symbol, start=start, end=now, interval=interval, progress=False
             )
         else:
-            data = yf.download(
-                symbol,
-                period=period,
-                interval=interval,
-                progress=False
-            )
+            data = yf.download(symbol, period=period, interval=interval, progress=False)
 
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0)
 
         if data.empty:
-            st.error(f"Keine Daten gefunden für {symbol} mit Periode {period} und Intervall {interval}.")
+            st.error(
+                f"Keine Daten gefunden für {symbol} mit Periode {period} und Intervall {interval}."
+            )
             st.session_state["data"] = None
             return
 
@@ -154,23 +154,26 @@ def show_dashboard():
         st.session_state["selected_symbol"] = None
     if "data" not in st.session_state:
         st.session_state["data"] = None
-    
+
     prog_ana_data = prognose_analyse()
     query = st.text_input(
         "Gib Aktien- oder Krypto-Ticker oder Namen ein",
         placeholder="z. B. apple, bitcoin, AAPL, BTC-USD",
-        key="ticker_query_input"
+        key="ticker_query_input",
     )
 
     if query:
         try:
-            if "last_query" not in st.session_state or st.session_state["last_query"] != query:
+            if (
+                "last_query" not in st.session_state
+                or st.session_state["last_query"] != query
+            ):
                 result = yf.Search(query, max_results=10)
                 st.session_state["search_quotes"] = result.quotes
                 st.session_state["last_query"] = query
 
             quotes = st.session_state["search_quotes"]
-            
+
             if quotes:
                 selection_options = []
                 symbol_map = {}
@@ -184,18 +187,18 @@ def show_dashboard():
 
                 PLACEHOLDER = "--- Wähle einen Ticker aus der Liste ---"
                 all_options = [PLACEHOLDER] + selection_options
-                
+
                 selected_label = st.selectbox(
                     "Vorschläge:",
                     options=all_options,
                     index=0,
                     key="autocomplete_selection",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
                 )
 
                 if selected_label != PLACEHOLDER:
                     selected_symbol_code = symbol_map[selected_label]
-                    
+
                     if st.session_state.get("selected_symbol") != selected_symbol_code:
                         st.session_state["selected_symbol"] = selected_symbol_code
                         st.session_state["data"] = None
@@ -218,7 +221,7 @@ def show_dashboard():
     # --- Daten-Optionen ---
     if selected_symbol:
         st.header(f"Daten-Optionen für {selected_symbol}")
-        
+
         col_period, col_interval = st.columns(2)
 
         with col_period:
@@ -232,13 +235,13 @@ def show_dashboard():
                 "1 Jahr": "1y",
                 "2 Jahre": "2y",
                 "5 Jahre": "5y",
-                "Maximal": "max"
+                "Maximal": "max",
             }
             selected_period_label = st.selectbox(
                 "Periode auswählen:",
                 options=list(period_options.keys()),
                 index=6,
-                key="input_period"
+                key="input_period",
             )
             selected_period_code = period_options[selected_period_label]
 
@@ -247,23 +250,25 @@ def show_dashboard():
                 "1 Stunde (nur 730 Tage)": "1h",
                 "1 Tag": "1d",
                 "1 Woche": "1wk",
-                "1 Monat": "1mo"
+                "1 Monat": "1mo",
             }
             selected_interval_label = st.selectbox(
                 "Intervall auswählen:",
                 options=list(interval_options.keys()),
                 index=1,
-                key="input_interval"
+                key="input_interval",
             )
             selected_interval_code = interval_options[selected_interval_label]
-            
+
         needs_reload = False
-        
+
         if st.session_state["data"] is None and selected_symbol:
             needs_reload = True
-        
-        elif st.session_state.get("period") != selected_period_code or \
-             st.session_state.get("interval") != selected_interval_code:
+
+        elif (
+            st.session_state.get("period") != selected_period_code
+            or st.session_state.get("interval") != selected_interval_code
+        ):
             needs_reload = True
 
         if needs_reload:
@@ -273,7 +278,7 @@ def show_dashboard():
     if st.session_state["data"] is not None:
         data = st.session_state["data"]
         symbol = st.session_state["symbol"]
-        
+
         st.divider()
 
         st.write(f"### Daten für {symbol}")
@@ -292,20 +297,20 @@ def show_dashboard():
         enabled = indicator_toogles(MA_WINDOWS)
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=data.index,
-            y=data["Close"],
-            mode="lines",
-            name="Close",
-            line=dict(color="black", width=2)
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=data.index,
+                y=data["Close"],
+                mode="lines",
+                name="Close",
+                line=dict(color="black", width=2),
+            )
+        )
 
         fig.update_layout(
-            title=f"{symbol} Schlusskurse", 
-            template="plotly_dark", 
-            height=500
-            )
-        
+            title=f"{symbol} Schlusskurse", template="plotly_dark", height=500
+        )
+
         add_ma_traces(fig, data, enabled)
         st.plotly_chart(fig, width="stretch")
 
@@ -314,75 +319,48 @@ def show_dashboard():
         rsi = compute_rsi(data["Close"])
 
         fig_rsi = go.Figure()
-        fig_rsi.add_trace(go.Scatter(
-            x=data.index,
-            y=rsi,
-            mode="lines",
-            name="RSI (14)",
-            line=dict(color="black", width=2)
-        ))
+        fig_rsi.add_trace(
+            go.Scatter(
+                x=data.index,
+                y=rsi,
+                mode="lines",
+                name="RSI (14)",
+                line=dict(color="black", width=2),
+            )
+        )
 
         # Überkauft (>70) – rot
-        fig_rsi.add_hrect(
-            y0=70,
-            y1=100,
-            fillcolor="red",
-            opacity=0.05,
-            line_width=0
-        )
+        fig_rsi.add_hrect(y0=70, y1=100, fillcolor="red", opacity=0.05, line_width=0)
 
         # Überverkauft (<30) – grün
-        fig_rsi.add_hrect(
-            y0=0,
-            y1=30,
-            fillcolor="green",
-            opacity=0.05,
-            line_width=0
-        )
+        fig_rsi.add_hrect(y0=0, y1=30, fillcolor="green", opacity=0.05, line_width=0)
 
-        #fig_rsi.add_hline(y=70, line_dash="dash")
-        #fig_rsi.add_hline(y=30, line_dash="dash")
+        # fig_rsi.add_hline(y=70, line_dash="dash")
+        # fig_rsi.add_hline(y=30, line_dash="dash")
 
         fig_rsi.update_layout(
             template="plotly_dark",
             height=500,
             yaxis_title="RSI",
-            yaxis=dict(range=[0, 100])
+            yaxis=dict(range=[0, 100]),
         )
 
         st.plotly_chart(fig_rsi, width="stretch")
 
         # --- Chart MACD ---
         st.markdown("**Moving Average Convergene/Divergence**")
-        
+
         macd, signal_line, hist = compute_macd(data["Close"])
 
         fig_macd = go.Figure()
-        fig_macd.add_trace(go.Bar(
-            x=data.index,
-            y=hist,
-            name="Histogramm",
-            opacity=0.8
-        ))
-        fig_macd.add_trace(go.Scatter(
-            x=data.index,
-            y=macd,
-            mode="lines",
-            name="MACD"
-        ))
-        fig_macd.add_trace(go.Scatter(
-            x=data.index,
-            y=signal_line,
-            mode="lines",
-            name="Signal"
-        ))
-
-        fig_macd.update_layout(
-            template="plotly_dark",
-            height=500,
-            yaxis_title="MACD"
+        fig_macd.add_trace(go.Bar(x=data.index, y=hist, name="Histogramm", opacity=0.8))
+        fig_macd.add_trace(go.Scatter(x=data.index, y=macd, mode="lines", name="MACD"))
+        fig_macd.add_trace(
+            go.Scatter(x=data.index, y=signal_line, mode="lines", name="Signal")
         )
-        
+
+        fig_macd.update_layout(template="plotly_dark", height=500, yaxis_title="MACD")
+
         st.plotly_chart(fig_macd, width="stretch")
 
         # --- Prognose und Analyse ----
@@ -391,7 +369,7 @@ def show_dashboard():
 
             # Platzhalter (werden sofort gerendert)
             ph_chart = col1.empty()
-            ph_text  = col2.empty()
+            ph_text = col2.empty()
 
             symbol = st.session_state.get("symbol")
 
@@ -408,32 +386,66 @@ def show_dashboard():
                     progdata, predictions, pred_days = prog_ana_data.get_prediction()
                     empfehlung, news = prog_ana_data.get_sentiment()
 
-                    st.session_state["prog_result"] = (progdata, predictions, pred_days, empfehlung, news)
+                    st.session_state["prog_result"] = (
+                        progdata,
+                        predictions,
+                        pred_days,
+                        empfehlung,
+                        news,
+                    )
                     st.session_state["run_prog"] = False
 
                 st.rerun()  # sorgt dafür, dass danach ohne Spinner sauber gerendert wird
 
             # 3) Ergebnis rendern, wenn vorhanden
             if st.session_state.get("prog_result") is not None:
-                progdata, predictions, pred_days, empfehlung, news = st.session_state["prog_result"]
+                progdata, predictions, pred_days, empfehlung, news = st.session_state[
+                    "prog_result"
+                ]
 
                 with col1:
                     st.subheader("Prognose Kursentwicklung")
                     figProg = go.Figure()
-                    figProg.add_trace(go.Scatter(x=progdata.index, y=progdata[symbol].values, mode="lines", name="Historie"))
-                    figProg.add_trace(go.Scatter(x=pred_days, y=predictions, mode="lines", name="Vorhersage"))
-                    figProg.add_trace(go.Scatter(x=[progdata.index[0], pred_days[-1]],y=[predictions[-1], predictions[-1]],mode="lines",name="Kursziel"))
-                    figProg.update_layout(template="plotly_dark", title="Kursentwicklung und Vorhersage",
-                                        xaxis_title="Datum", yaxis_title="Kurs")
+                    figProg.add_trace(
+                        go.Scatter(
+                            x=progdata.index,
+                            y=progdata[symbol].values,
+                            mode="lines",
+                            name="Historie",
+                        )
+                    )
+                    figProg.add_trace(
+                        go.Scatter(
+                            x=pred_days, y=predictions, mode="lines", name="Vorhersage"
+                        )
+                    )
+                    figProg.add_trace(
+                        go.Scatter(
+                            x=[progdata.index[0], pred_days[-1]],
+                            y=[predictions[-1], predictions[-1]],
+                            mode="lines",
+                            name="Kursziel",
+                        )
+                    )
+                    figProg.update_layout(
+                        template="plotly_dark",
+                        title="Kursentwicklung und Vorhersage",
+                        xaxis_title="Datum",
+                        yaxis_title="Kurs",
+                    )
                     st.plotly_chart(figProg, width="stretch")
 
                 with col2:
                     st.subheader("News-basierte Handlungsempfehlung")
-                    st.markdown(f"<div style='text-align:center;margin-top:30px;font-size:24px;'>{empfehlung}</div>",
-                                unsafe_allow_html=True)
-                    st.markdown(f"<div style='text-align:center;margin-top:20px;font-size:12px;'>{news}</div>",
-                                unsafe_allow_html=True)
-            
+                    st.markdown(
+                        f"<div style='text-align:center;margin-top:30px;font-size:24px;'>{empfehlung}</div>",
+                        unsafe_allow_html=True,
+                    )
+                    st.markdown(
+                        f"<div style='text-align:center;margin-top:20px;font-size:12px;'>{news}</div>",
+                        unsafe_allow_html=True,
+                    )
+
             st.divider()
             if st.button("Prognose neu berechnen", use_container_width=True):
                 st.session_state["prog_result"] = None

@@ -10,12 +10,12 @@ Diese Klasse stellt Methoden bereit, um basierend auf yfinance Daten
 Empfehlungen für den Kauf oder Verkauf einer Aktie zu ermitteln.
 
 
-Quellen: 
+Quellen:
 - Programmierung
     - Lehrbrief zur Vorlesung
     - ChatGPT
     - https://docs.python.org/3/reference/index.html
-    
+
 - ARIMA:
     - https://de.wikipedia.org/wiki/ARMA-Modell#ARIMA
     - https://www.youtube.com/watch?v=JMT1eGJ9c2M
@@ -34,12 +34,13 @@ from databaseHandler import DatabaseAdministration
 import appconfig
 import logging
 
+
 class prognose_analyse:
     """
     Diese Klasse stellt Methoden bereit, um basierend auf yfinance Daten
     Empfehlungen für den Kauf oder Verkauf einer Aktie zu ermitteln.
     """
-     
+
     def __init__(self):
         """
         Initialisiert eine Intsanz der Klasse 'prognose_analyse' mit leeren Werten der Attribute.
@@ -47,23 +48,22 @@ class prognose_analyse:
         :param -
         :return: -
         """
-        self.Firmenname = ''
+        self.Firmenname = ""
 
         pred_dict = {}
-        pred_dict['hist_data'] = None
-        pred_dict['pred'] = {}
-        pred_dict['pred']['Tage'] = []
-        pred_dict['pred']['Werte'] = []
+        pred_dict["hist_data"] = None
+        pred_dict["pred"] = {}
+        pred_dict["pred"]["Tage"] = []
+        pred_dict["pred"]["Werte"] = []
         self.pred_dict = pred_dict
 
         sent_dict = {}
-        sent_dict['news'] = ''
-        sent_dict['news_red'] = ''
-        sent_dict['empfehlung'] = ''
+        sent_dict["news"] = ""
+        sent_dict["news_red"] = ""
+        sent_dict["empfehlung"] = ""
         self.sent_dict = sent_dict
         self.user_administration = DatabaseAdministration()
         self.KEY_USERNAME = appconfig.KEY_USERNAME
-        
 
     def ticker2Firma(self, tickername):
         """
@@ -73,11 +73,10 @@ class prognose_analyse:
         :return - FirmenName: Name der Aktienfirma, wie von yFinance geführt
         """
         # Tickername -> Firmenname
-        FirmenName = yf.Ticker(tickername).info.get('longName')
+        FirmenName = yf.Ticker(tickername).info.get("longName")
         self.FirmenName = FirmenName
 
         return FirmenName
-
 
     def prognose_kurs(self, tickername):
         """
@@ -91,16 +90,22 @@ class prognose_analyse:
 
         # lade Kurse der letzten 90 Tage
         end_date = datetime.today()  # Aktuelles Datum -> Enddatum
-        start_date = end_date - timedelta(days=90) # Startdatum
-        kursverlauf = yf.download(tickername, start=start_date.strftime('%Y-%m-%d'), end=end_date.strftime('%Y-%m-%d'),  auto_adjust=True, progress=False)
+        start_date = end_date - timedelta(days=90)  # Startdatum
+        kursverlauf = yf.download(
+            tickername,
+            start=start_date.strftime("%Y-%m-%d"),
+            end=end_date.strftime("%Y-%m-%d"),
+            auto_adjust=True,
+            progress=False,
+        )
 
         # reduziere die Daten auf die Schlusskurse des Tages
-        data = kursverlauf['Close']
+        data = kursverlauf["Close"]
 
         # Approximation mit Arima model
-        p_arima = 6 # Anzahl letzter Ausgangswerte
-        d_arima = 1 # Anzahl der Differenzbildungen, um statistisch stationäre Werte zu erhalten
-        q_arima = 3 # Anzahl für gleitenden Mittelwert
+        p_arima = 6  # Anzahl letzter Ausgangswerte
+        d_arima = 1  # Anzahl der Differenzbildungen, um statistisch stationäre Werte zu erhalten
+        q_arima = 3  # Anzahl für gleitenden Mittelwert
         model = ARIMA(data, order=(p_arima, d_arima, q_arima))
         model_fit = model.fit()
 
@@ -112,14 +117,13 @@ class prognose_analyse:
         pred_days = [data.index[-1] + timedelta(days=i) for i in range(0, 15)]
 
         # Schreibe Werte auf Attribute
-        self.pred_dict['hist_data'] = data
-        self.pred_dict['pred']['Tage'] = predictions
-        self.pred_dict['pred']['Werte'] = pred_days
-   
+        self.pred_dict["hist_data"] = data
+        self.pred_dict["pred"]["Tage"] = predictions
+        self.pred_dict["pred"]["Werte"] = pred_days
 
     def news_sentiment(self, tickername):
         """
-        Lade per Google-Suche die neuesten Nachrichten zu gewählten Aktienfirma und leite daraus 
+        Lade per Google-Suche die neuesten Nachrichten zu gewählten Aktienfirma und leite daraus
         eine Kaufempfehlung ab
 
         :param - tickername: offzielles Kuerzel wievon yFinance verwendet
@@ -140,14 +144,14 @@ class prognose_analyse:
                 news_prompt += f"- {news[i]['description']}\n"
 
         except:
-            err_msg = 'Git news ist nicht erreichbar'
+            err_msg = "Git news ist nicht erreichbar"
             # update class attributes
-            self.sent_dict['news'] = err_msg
-            self.sent_dict['news_red'] = err_msg
-            self.sent_dict['empfehlung'] = err_msg
+            self.sent_dict["news"] = err_msg
+            self.sent_dict["news_red"] = err_msg
+            self.sent_dict["empfehlung"] = err_msg
 
-            return    
-        
+            return
+
         GEMINI_API_KEY = None
 
         try:
@@ -166,20 +170,23 @@ class prognose_analyse:
 
         # 4. Validierung: Abbruch, falls immer noch kein Key gefunden wurde
         if not GEMINI_API_KEY:
-            err_msg = 'Pruefe GEMINI API KEY: Kein Key in Umgebung oder Datenbank gefunden.'
-            self.sent_dict['news_red'] = err_msg
-            self.sent_dict['empfehlung'] = err_msg
+            err_msg = (
+                "Pruefe GEMINI API KEY: Kein Key in Umgebung oder Datenbank gefunden."
+            )
+            self.sent_dict["news_red"] = err_msg
+            self.sent_dict["empfehlung"] = err_msg
             return
 
         # 5. Client initialisieren
         try:
             # Initialisierung des Google AI Clients mit dem gefundenen Key
             client = genai.Client(api_key=GEMINI_API_KEY)
-            
 
         except Exception as e:
-            logging.exception("Unerwarteter Fehler beim Initialisieren des Gemini Clients")
-            self.sent_dict['news_red'] = "Fehler bei der API-Initialisierung"
+            logging.exception(
+                "Unerwarteter Fehler beim Initialisieren des Gemini Clients"
+            )
+            self.sent_dict["news_red"] = "Fehler bei der API-Initialisierung"
             return
 
         # Prompt-Erstellung
@@ -189,26 +196,26 @@ class prognose_analyse:
         try:
             # LLM Abfrage für Handlungsempfehlung
             response = client.models.generate_content(
-            model="gemini-2.5-flash", contents = prompt
+                model="gemini-2.5-flash", contents=prompt
             )
             empfehlung = getattr(response, "text", None)
             if not empfehlung:
-                empfehlung = 'Google Gemini derzeit nicht erreichbar'
+                empfehlung = "Google Gemini derzeit nicht erreichbar"
 
         except:
-            empfehlung = 'Google Gemini derzeit nicht erreichbar'
+            empfehlung = "Google Gemini derzeit nicht erreichbar"
 
         # Ergänzung um Pfeilsymbol
-        if empfehlung == 'Verkaufen':
-            arrow = '⬇️'
-        elif empfehlung == 'Halten':
-            arrow = '➡️'
-        elif empfehlung == 'Kaufen':
-            arrow = '⬆️'
+        if empfehlung == "Verkaufen":
+            arrow = "⬇️"
+        elif empfehlung == "Halten":
+            arrow = "➡️"
+        elif empfehlung == "Kaufen":
+            arrow = "⬆️"
         else:
-            arrow = ' '            
+            arrow = " "
 
-        empfehlung = empfehlung + ' ' + arrow
+        empfehlung = empfehlung + " " + arrow
 
         # prompt um news zu kondensieren
         prompt = "Reduziere folgende News auf die 10 wichtigsten Stichwörter. Wähle diese so, dass sie den massgeblichen Einfluss auf den Aktienkurs der letzten 48 stunden hatten. Gebe nichts anderes, als diese 10 wörter zurück. Trenne diese durch ein Komma. Benutze keine anderen Quellen als diesen Prompt. News:"
@@ -217,21 +224,21 @@ class prognose_analyse:
         try:
             # LLM Abfrage um news zu kondensieren
             response = client.models.generate_content(
-            model="gemini-2.5-flash", contents = prompt
+                model="gemini-2.5-flash", contents=prompt
             )
             news_reduktion = getattr(response, "text", None)
             if not news_reduktion:
-                news_reduktion = 'Google Gemini derzeit nicht erreichbar'
+                news_reduktion = "Google Gemini derzeit nicht erreichbar"
 
         except:
-            news_reduktion = 'Google Gemini derzeit nicht erreichbar'
-        
-        news_reduktion = news_reduktion.replace(',', '<br>').strip()
+            news_reduktion = "Google Gemini derzeit nicht erreichbar"
+
+        news_reduktion = news_reduktion.replace(",", "<br>").strip()
 
         # update class attributes
-        self.sent_dict['news'] = news
-        self.sent_dict['news_red'] = news_reduktion
-        self.sent_dict['empfehlung'] = empfehlung
+        self.sent_dict["news"] = news
+        self.sent_dict["news_red"] = news_reduktion
+        self.sent_dict["empfehlung"] = empfehlung
 
     def update(self, tickername):
         """
@@ -243,18 +250,17 @@ class prognose_analyse:
         self.news_sentiment(tickername)
         self.prognose_kurs(tickername)
 
-
     def get_sentiment(self):
         """
         Zugriffsfunktion für Attribute der News-Methode
 
-        :param - 
+        :param -
         :return: empfehlung, news_reduktion
             - empfehlung: Stichwort: Verkaufen, Halten oder Kaufen
             - news_reduktion: 10 Stichwörter, auf denen die News-Empfehlung basiert
         """
-        empfehlung = self.sent_dict['empfehlung']
-        news_reduktion = self.sent_dict['news_red']
+        empfehlung = self.sent_dict["empfehlung"]
+        news_reduktion = self.sent_dict["news_red"]
 
         return empfehlung, news_reduktion
 
@@ -262,7 +268,7 @@ class prognose_analyse:
         """
         Zugriffsfunktion für Attribute der Vorhersage-Methode
 
-        :param - 
+        :param -
         :return - pred_data, predictions, pred_days
             - pred_data: data frame mit Kursverlauf, auf dem die Vorhersage basiert
             - predictions: liste mit vorhergesagten Kurswerte
@@ -270,27 +276,26 @@ class prognose_analyse:
         """
 
         # update class attributes
-        pred_data = self.pred_dict['hist_data']
-        predictions = self.pred_dict['pred']['Tage']
-        pred_days = self.pred_dict['pred']['Werte']
+        pred_data = self.pred_dict["hist_data"]
+        predictions = self.pred_dict["pred"]["Tage"]
+        pred_days = self.pred_dict["pred"]["Werte"]
 
         return pred_data, predictions, pred_days
-    
 
 
 if __name__ == "__main__":
 
     """
-        Test funktion
+    Test funktion
     """
     # Erstelle eine Instanz der Klasse
     pa = prognose_analyse()
 
     # Beispiel-Ticker Apple
-    ticker = "AAPL"  
+    ticker = "AAPL"
 
     # Berechnung der Prognose
-    pa.prognose_kurs(ticker)    
+    pa.prognose_kurs(ticker)
     pa.news_sentiment(ticker)
 
     # Konsolenausgabe

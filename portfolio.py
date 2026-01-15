@@ -6,12 +6,12 @@ Autor: Bastian Pivarcsi
 Datum: 13.01.2026
 
 Beschreibung:
-Diese Klasse repräsentiert ein Nutzer-Portfolio. Sie dient als Container für 
-einzelne Assets und bietet Methoden zum Laden der Daten aus der Datenbank 
+Diese Klasse repräsentiert ein Nutzer-Portfolio. Sie dient als Container für
+einzelne Assets und bietet Methoden zum Laden der Daten aus der Datenbank
 sowie zur Berechnung des Gesamtwerts aller enthaltenen Positionen.
 
 
-Quellen: 
+Quellen:
 - Programmierung
     - Lehrbrief zur Vorlesung
     - https://docs.python.org/3/library/typing.html
@@ -20,6 +20,7 @@ Quellen:
 from typing import List
 from portfolioasset import PortfolioAsset
 from databaseHandler import DatabaseAdministration
+
 
 class Portfolio:
     """
@@ -40,7 +41,7 @@ class Portfolio:
 
     def load_assets(self):
         """
-        Lädt alle zugehörigen Assets aus der Datenbank und instanziiert 
+        Lädt alle zugehörigen Assets aus der Datenbank und instanziiert
         entsprechende PortfolioAsset-Objekte.
 
         :param: -
@@ -48,10 +49,10 @@ class Portfolio:
         """
         # Abruf der Rohdaten über den DatabaseHandler
         raw_assets = self.handler.get_assets_for_portfolio(self.id)
-        
+
         # Liste zurücksetzen, um Dopplungen beim Neuladen zu vermeiden
         self.assets = []
-        
+
         # Umwandlung der Datenbankzeilen in Objekte
         for data in raw_assets:
             new_asset = PortfolioAsset(
@@ -62,7 +63,7 @@ class Portfolio:
                 amount=data["amount"],
                 buy_price=data["buy_price"],
                 bought_at=data["bought_at"],
-                asset_id=data["asset_id"]
+                asset_id=data["asset_id"],
             )
             self.assets.append(new_asset)
 

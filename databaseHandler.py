@@ -6,12 +6,12 @@ Autor: Bastian Pivarcsi
 Datum: 13.01.2026
 
 Beschreibung:
-Diese Klasse übernimmt die Verwaltung einer SQLite-Datenbank für ein Portfolio-Management-System. 
-Sie bietet Funktionen zur Nutzerregistrierung, Authentifizierung sowie zur Verwaltung 
+Diese Klasse übernimmt die Verwaltung einer SQLite-Datenbank für ein Portfolio-Management-System.
+Sie bietet Funktionen zur Nutzerregistrierung, Authentifizierung sowie zur Verwaltung
 von Portfolios, Assets und der Speicherung von Gemini API Keys.
 
 
-Quellen: 
+Quellen:
 - Programmierung
     - Lehrbrief zur Vorlesung
     - Gemini
@@ -28,7 +28,10 @@ from typing import Optional, List, Dict, Any
 from appconfig import DATABASE_NAME
 
 # Grundkonfiguration für das Logging
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 class DatabaseAdministration:
     """
@@ -130,7 +133,7 @@ class DatabaseAdministration:
 
     # --------- Nutzer-Funktionen ---------
 
-    def username_exists(self, username: str) -> bool: 
+    def username_exists(self, username: str) -> bool:
         """
         Prüft, ob ein Benutzername bereits in der Datenbank vergeben ist.
 
@@ -154,7 +157,9 @@ class DatabaseAdministration:
             cur.execute("SELECT 1 FROM users WHERE email = ?", (email,))
             return cur.fetchone() is not None
 
-    def add_user(self, username: str, email: str, passwort: str, gemini_key: str) -> bool:
+    def add_user(
+        self, username: str, email: str, passwort: str, gemini_key: str
+    ) -> bool:
         """
         Legt einen neuen Nutzer an und erstellt automatisch ein Standard-Portfolio.
 
@@ -212,11 +217,19 @@ class DatabaseAdministration:
         """
         with self._get_connection() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT id, username, email, erstellt_am FROM users WHERE username = ?", (username,))
+            cur.execute(
+                "SELECT id, username, email, erstellt_am FROM users WHERE username = ?",
+                (username,),
+            )
             row = cur.fetchone()
             if not row:
                 return None
-            return {"id": row[0], "username": row[1], "email": row[2], "erstellt_am": row[3]}
+            return {
+                "id": row[0],
+                "username": row[1],
+                "email": row[2],
+                "erstellt_am": row[3],
+            }
 
     def get_gemini_api_key(self, username: str) -> Optional[str]:
         """
@@ -228,14 +241,18 @@ class DatabaseAdministration:
         try:
             with self._get_connection() as conn:
                 cur = conn.cursor()
-                cur.execute("SELECT gemini_api_key FROM users WHERE username = ?", (username,))
+                cur.execute(
+                    "SELECT gemini_api_key FROM users WHERE username = ?", (username,)
+                )
                 row = cur.fetchone()
                 return row[0] if row else None
         except Exception:
             logging.exception("Unerwarteter Fehler beim Lesen des API Keys")
             return None
-        
-    def update_user_settings(self, username, new_email, new_password_hash=None, new_gemini_key=None):
+
+    def update_user_settings(
+        self, username, new_email, new_password_hash=None, new_gemini_key=None
+    ):
         """Aktualisiert die Profildaten eines Nutzers in der Datenbank."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -243,20 +260,20 @@ class DatabaseAdministration:
                 # E-Mail und Gemini Key immer aktualisieren
                 cur.execute(
                     "UPDATE users SET email = ?, gemini_api_key = ? WHERE username = ?",
-                    (new_email, new_gemini_key, username)
+                    (new_email, new_gemini_key, username),
                 )
                 # Passwort nur aktualisieren, wenn ein neues gesetzt wurde
                 if new_password_hash:
                     cur.execute(
                         "UPDATE users SET passwort_hash = ? WHERE username = ?",
-                        (new_password_hash, username)
+                        (new_password_hash, username),
                     )
                 conn.commit()
                 return True
         except Exception as e:
             logging.error(f"Fehler beim Profil-Update: {e}")
             return False
-        
+
     def delete_user_account(self, username):
         """Löscht einen Nutzer und alle zugehörigen Daten aus der Datenbank."""
         try:
@@ -305,7 +322,10 @@ class DatabaseAdministration:
         try:
             with self._get_connection() as conn:
                 cur = conn.cursor()
-                cur.execute("DELETE FROM portfolio WHERE id = ? AND portfolio_username = ?", (portfolio_id, username))
+                cur.execute(
+                    "DELETE FROM portfolio WHERE id = ? AND portfolio_username = ?",
+                    (portfolio_id, username),
+                )
                 conn.commit()
                 return cur.rowcount > 0
         except Exception:
@@ -321,7 +341,9 @@ class DatabaseAdministration:
         """
         with self._get_connection() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT id FROM portfolio WHERE portfolio_username = ?", (username,))
+            cur.execute(
+                "SELECT id FROM portfolio WHERE portfolio_username = ?", (username,)
+            )
             return [row[0] for row in cur.fetchall()]
 
     def get_portfolios_for_user(self, username: str) -> List[tuple]:
@@ -333,7 +355,10 @@ class DatabaseAdministration:
         """
         with self._get_connection() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT id, portfolio_name FROM portfolio WHERE portfolio_username = ? ORDER BY id", (username,))
+            cur.execute(
+                "SELECT id, portfolio_name FROM portfolio WHERE portfolio_username = ? ORDER BY id",
+                (username,),
+            )
             return cur.fetchall()
 
     # --------- Asset-Funktionen ---------
@@ -345,9 +370,9 @@ class DatabaseAdministration:
         asset_symbol: str,
         asset_name: Optional[str],
         amount: float,
-        buy_price: float,          
+        buy_price: float,
         bought_at: str,
-        currency: str = "EUR",    
+        currency: str = "EUR",
     ) -> Optional[int]:
         """
         Fügt einem Portfolio ein neues Asset hinzu.
@@ -363,7 +388,16 @@ class DatabaseAdministration:
                     INSERT INTO assets (portfolio_id, asset_type, asset_symbol, asset_name, amount, buy_price, bought_at, currency)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (portfolio_id, asset_type, asset_symbol, asset_name, amount, buy_price, bought_at, currency),
+                    (
+                        portfolio_id,
+                        asset_type,
+                        asset_symbol,
+                        asset_name,
+                        amount,
+                        buy_price,
+                        bought_at,
+                        currency,
+                    ),
                 )
                 a_id = cur.lastrowid
                 conn.commit()
@@ -395,8 +429,9 @@ class DatabaseAdministration:
                     "asset_name": r[3],
                     "amount": r[4],
                     "buy_price": r[5],
-                    "bought_at": r[6]
-                } for r in rows
+                    "bought_at": r[6],
+                }
+                for r in rows
             ]
 
     def delete_asset(self, asset_id: int) -> bool:
