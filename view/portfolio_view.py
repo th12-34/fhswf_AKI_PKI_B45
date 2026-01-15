@@ -7,7 +7,6 @@ Beschreibung: Portfolioverwaltung Barmittel, Aktien und Wertpapiere
 
 import datetime
 import streamlit as st
-import yfinance as yf
 import time
 import plotly.express as px
 import plotly.graph_objects as go
@@ -16,234 +15,8 @@ import pandas as pd
 # Eigene Module
 from portfoliomanager import PortfolioManager
 from portfolioasset import PortfolioAsset
+from portfolio_calculator import PortfolioCalculator
 import appconfig as config
-
-# --- WÄHRUNGS- & API-LOGIK ---
-
-
-@st.cache_data(ttl=3600)
-def get_eur_exchange_rate(from_currency: str):
-    """Holt den aktuellen Wechselkurs zu EUR. Fallback ist 1.0."""
-    if not from_currency or from_currency == "EUR":
-        return 1.0
-
-    # Sonderfall britische Pence
-    if from_currency == "GBp":
-        try:
-            rate = yf.Ticker("GBPEUR=X").history(period="1d")["Close"].iloc[-1]
-            return rate / 100
-        except:
-            return 0.011  # Grober Fallback
-
-    try:
-        ticker_symbol = f"{from_currency}EUR=X"
-        rate = yf.Ticker(ticker_symbol).history(period="1d")["Close"].iloc[-1]
-        return rate
-    except:
-        return 1.0
-
-
-@st.cache_data(ttl=600)
-def fetch_live_data(symbol: str):
-    """
-    Ruft Marktdaten ab. Versucht bei Krypto automatisch -EUR anzuhaengen.
-    Nutzt Fallbacks, falls .info fehlschlaegt.
-    """
-    if not symbol:
-        return None
-
-    search_symbol = symbol.strip().upper()
-    # Automatisches Fix fuer bekannte Kryptos ohne Paar
-    if search_symbol in ["BTC", "ETH", "SOL", "XRP", "ADA"]:
-        search_symbol = f"{search_symbol}-EUR"
-
-    try:
-        ticker = yf.Ticker(search_symbol)
-        info = ticker.info
-
-        # Preis-Ermittlung mit mehreren Fallbacks (wichtig fuer BTC)
-        price = (
-            info.get("currentPrice")
-            or info.get("regularMarketPrice")
-            or info.get("previousClose")
-        )
-
-        if price is None:
-            # Wenn .info leer ist (oft bei Krypto), nutze history
-            hist = ticker.history(period="1d")
-            if not hist.empty:
-                price = hist["Close"].iloc[-1]
-
-        if price is None:
-            return None
-
-        currency = info.get("currency", "EUR")
-        rate = get_eur_exchange_rate(currency)
-        price_in_eur = float(price) * rate
-
-        # Typ-Zuordnung
-        raw_type = info.get("quoteType", "").upper()
-        if (
-            raw_type == "CRYPTOCURRENCY"
-            or "-EUR" in search_symbol
-            or "-USD" in search_symbol
-        ):
-            a_type = "crypto"
-        else:
-            a_type = "stock"
-
-        return {
-            "name": info.get("shortName") or info.get("longName") or search_symbol,
-            "price_eur": float(price_in_eur),
-            "type": a_type,
-            "currency": currency,
-            "symbol": search_symbol,
-        }
-    except:
-        return None
-
-
-@st.cache_data(ttl=3600)
-def get_historical_price_eur(
-    symbol: str, currency: str, date_obj: datetime.date
-) -> float:
-    """Holt historischen Preis und rechnet in EUR um."""
-    try:
-        # Zeitraum definieren (Datum + Puffer für Wochenende)
-        start = date_obj
-        end = date_obj + datetime.timedelta(days=4)
-
-        # 1. Preis des Assets holen
-        t = yf.Ticker(symbol)
-        hist = t.history(start=start, end=end)
-
-        if hist.empty:
-            return None
-
-        # Nimm den ersten verfügbaren Close-Wert im Zeitraum
-        asset_price = hist["Close"].iloc[0]
-
-        # 2. Währungskurs holen
-        if currency == "EUR":
-            return float(asset_price)
-
-        # Wechselkurs historisch (Fallback auf aktuellen Kurs, wenn historisch nicht verfügbar)
-        fx_symbol = f"{currency}EUR=X"
-        fx_hist = yf.Ticker(fx_symbol).history(start=start, end=end)
-
-        rate = (
-            fx_hist["Close"].iloc[0]
-            if not fx_hist.empty
-            else get_eur_exchange_rate(currency)
-        )
-        return float(asset_price) * rate
-    except:
-        return None
-
-
-@st.cache_data(ttl=600, show_spinner=False)
-def calculate_portfolio_history(assets_data, period, interval):
-    """
-    Berechnet den historischen Verlauf des Portfolios basierend auf den aktuellen Beständen (Backtest).
-    assets_data: Liste von Tupeln (symbol, amount, currency, type, bought_at)
-    """
-    if not assets_data:
-        return None
-
-    # 1. Symbole sammeln
-    tickers = set()
-    currencies = set()
-
-    for sym, amt, cur, typ, bought_at in assets_data:
-        if typ == "cash":
-            continue
-
-        tickers.add(sym)
-        if cur != "EUR":
-            currencies.add(cur)
-
-    if not tickers:
-        # Nur Cash vorhanden
-        return None
-
-    # 2. FX-Ticker definieren
-    fx_map = {c: f"{c}EUR=X" for c in currencies}
-    download_list = list(tickers) + list(fx_map.values())
-
-    # 3. Daten laden
-    try:
-        raw_data = yf.download(
-            download_list, period=period, interval=interval, progress=False
-        )
-
-        # Zugriff auf 'Close' Spalte sicherstellen
-        if "Close" in raw_data:
-            data = raw_data["Close"]
-        else:
-            data = (
-                raw_data  # Fallback, falls nur 1 Ticker und keine Multi-Level-Columns
-            )
-
-        # Wenn nur ein Ticker geladen wurde, ist es eine Series -> DataFrame konvertieren
-        if isinstance(data, pd.Series):
-            data = data.to_frame(name=download_list[0])
-
-        # Lücken füllen
-        data = data.ffill().bfill()
-
-        # 4. Gesamtwert berechnen
-        total_series = pd.Series(0.0, index=data.index)
-        earliest_purchase = None
-
-        for sym, amt, cur, typ, bought_at in assets_data:
-            # Earliest Date tracken
-            if bought_at:
-                if earliest_purchase is None or bought_at < earliest_purchase:
-                    earliest_purchase = bought_at
-
-            # Start-Zeitpunkt für dieses Asset bestimmen
-            start_ts = pd.Timestamp(bought_at) if bought_at else None
-            if start_ts and data.index.tz is not None:
-                start_ts = start_ts.tz_localize(data.index.tz)
-
-            if typ == "cash":
-                if cur == "EUR" and start_ts:
-                    # Cash erst ab Kaufdatum addieren
-                    total_series.loc[data.index >= start_ts] += amt
-                continue
-
-            if sym not in data.columns:
-                continue
-
-            price_series = data[sym]
-
-            # Währungsumrechnung
-            if cur != "EUR" and cur in fx_map:
-                fx_sym = fx_map[cur]
-                if fx_sym in data.columns:
-                    price_series = price_series * data[fx_sym]
-
-            # Wert nur addieren, wenn Datum >= Kaufdatum
-            if start_ts:
-                # Wir nehmen eine Kopie, um das Original nicht zu verändern
-                val_series = price_series * amt
-                val_series.loc[data.index < start_ts] = 0.0
-                total_series += val_series
-            else:
-                total_series += price_series * amt
-
-        # 5. Graph erst ab dem ersten Kaufdatum anzeigen
-        if earliest_purchase:
-            start_ts_global = pd.Timestamp(earliest_purchase)
-            if data.index.tz is not None:
-                start_ts_global = start_ts_global.tz_localize(data.index.tz)
-            total_series = total_series[total_series.index >= start_ts_global]
-
-        return total_series
-
-    except Exception as e:
-        # st.error(f"Fehler bei Historienberechnung: {e}")
-        return None
 
 
 def show_view_page():
@@ -299,14 +72,13 @@ def show_view_page():
         ]
 
         with st.spinner("Berechne Portfolio-Historie..."):
-            hist_series = calculate_portfolio_history(assets_for_calc, period, interval)
+            hist_series = PortfolioCalculator.calculate_portfolio_history(assets_for_calc, period, interval)
 
         if hist_series is not None and not hist_series.empty:
             # Performance Metriken
             end_val = hist_series.iloc[-1]
             invested_capital = manager.currentPortfolio.get_total_value()
-            diff = end_val - invested_capital
-            pct = (diff / invested_capital) * 100 if invested_capital != 0 else 0
+            diff, pct = PortfolioCalculator.calculate_performance(invested_capital, end_val)
 
             # Metrik anzeigen
             st.metric(
@@ -352,7 +124,7 @@ def show_view_page():
             # Preis ermitteln (Live oder Fallback auf Kaufpreis)
             price = asset.buy_price
             if asset.type != "cash":
-                live_data = fetch_live_data(asset.symbol)
+                live_data = PortfolioCalculator.fetch_live_data(asset.symbol)
                 if live_data:
                     price = live_data["price_eur"]
             val = asset.amount * price
@@ -389,7 +161,7 @@ def show_view_page():
             # Daten für Sortierung vorbereiten
             holdings_list = []
             for sym, data in holdings.items():
-                live_data = fetch_live_data(sym)
+                live_data = PortfolioCalculator.fetch_live_data(sym)
                 current_price = live_data["price_eur"] if live_data else 0.0
                 total_val = data["amount"] * current_price
                 avg_buy_price = (
@@ -405,24 +177,25 @@ def show_view_page():
                         "current_price": current_price,
                         "avg_buy_price": avg_buy_price,
                         "total_val": total_val,
+                        "invested": data["invested"],
                     }
                 )
 
             # Sortieren nach Gesamtwert absteigend
             holdings_list.sort(key=lambda x: x["total_val"], reverse=True)
 
-            cols_i = st.columns([0.8, 2.0, 0.6, 0.8, 1, 1, 1.2])
-            labels_i = ["Symbol", "Name", "Typ", "Menge", "Kurs", "Ø Kaufkurs", "Wert"]
+            cols_i = st.columns([0.8, 2.0, 0.6, 0.8, 1, 1, 1.2, 1.0])
+            labels_i = ["Symbol", "Name", "Typ", "Menge", "Kurs", "Ø Kaufkurs", "Wert", "Entwicklung"]
             for col, label in zip(cols_i, labels_i):
                 col.write(f"**{label}**")
             st.divider()
 
             for item in holdings_list:
-                c = st.columns([0.8, 2.0, 0.6, 0.8, 1, 1, 1.2])
+                c = st.columns([0.8, 2.0, 0.6, 0.8, 1, 1, 1.2, 1.0])
                 c[0].write(item["sym"])
                 c[1].write(item["name"])
                 c[2].caption(item["type"].upper())
-                c[3].write(f"{item['amount']:g}")
+                c[3].write(f"{item['amount']:.1f}")
                 c[4].write(
                     f"{item['current_price']:,.2f} EUR"
                     if item["current_price"]
@@ -430,6 +203,13 @@ def show_view_page():
                 )
                 c[5].write(f"{item['avg_buy_price']:,.2f} EUR")
                 c[6].write(f"**{item['total_val']:,.2f} EUR**")
+
+                # Entwicklung berechnen
+                invested = item["invested"]
+                diff, pct = PortfolioCalculator.calculate_performance(invested, item["total_val"])
+                color = "green" if diff >= 0 else "red"
+                prefix = "+" if diff >= 0 else ""
+                c[7].markdown(f":{color}[{prefix}{pct:.2f}%]")
 
     st.divider()
 
@@ -441,7 +221,7 @@ def show_view_page():
             "Ticker-Symbol (z.B. BTC, MSTR, AAPL)", key="search_input"
         ).strip()
         if query:
-            data = fetch_live_data(query)
+            data = PortfolioCalculator.fetch_live_data(query)
             if data:
                 # Info-Box bei Umrechnung
                 if data["currency"] != "EUR":
@@ -454,7 +234,7 @@ def show_view_page():
 
                 c1, c2 = st.columns(2)
                 qty = c1.number_input(
-                    "Menge", min_value=0.0, format="%.6f", key="asset_qty"
+                    "Menge", min_value=0.0, format="%.1f", key="asset_qty"
                 )
 
                 # Auswahl: Aktueller Preis oder Historisch
@@ -484,7 +264,7 @@ def show_view_page():
                     )
                     selected_date_str = sel_date.strftime("%Y-%m-%d")
                     with st.spinner("Lade historischen Kurs..."):
-                        hist_price = get_historical_price_eur(
+                        hist_price = PortfolioCalculator.get_historical_price_eur(
                             data["symbol"], data["currency"], sel_date
                         )
 
@@ -553,19 +333,26 @@ def show_view_page():
                 col.write(f"**{label}**")
             st.divider()
 
-            for idx, asset in enumerate(manager.currentPortfolio.assets):
+            # Sortieren nach Kaufdatum absteigend (neueste oben)
+            sorted_assets = sorted(
+                manager.currentPortfolio.assets,
+                key=lambda x: x.bought_at,
+                reverse=True
+            )
+
+            for idx, asset in enumerate(sorted_assets):
                 c = st.columns([0.8, 1.5, 0.6, 0.8, 1, 1, 1, 1.2, 0.8])
                 c[0].write(asset.symbol)
                 c[1].write(asset.name)
                 c[2].caption(asset.type.upper())
-                c[3].write("-" if asset.type == "cash" else f"{asset.amount:g}")
+                c[3].write("-" if asset.type == "cash" else f"{asset.amount:.1f}")
 
                 # Aktueller Kurs (Live)
                 cur_price = "-"
                 calc_price = asset.buy_price
 
                 if asset.type != "cash":
-                    live = fetch_live_data(asset.symbol)
+                    live = PortfolioCalculator.fetch_live_data(asset.symbol)
                     if live:
                         calc_price = live["price_eur"]
                         cur_price = f"{live['price_eur']:,.2f} EUR"
