@@ -63,7 +63,7 @@ def render_topbar():
 
     with right:
         logged_in = st.session_state.get(appconfig.KEY_LOGGED_IN, False)
-        username = st.session_state.get(appconfig.KEY_USERNAME, "Guest")
+        username = st.session_state.get(appconfig.KEY_USERNAME, "Gast")
 
         if "show_snow" not in st.session_state:
             st.session_state["show_snow"] = False
@@ -84,7 +84,7 @@ def render_topbar():
             # Auswahl zwischen Login und Registrierung
             tab = st.segmented_control(
                 "auth_tab_selector",
-                options=["Login", "Registration"],
+                options=["Login", "Registrierung"],
                 key="auth_tab",
                 label_visibility="collapsed",
             )

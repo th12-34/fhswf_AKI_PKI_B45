@@ -1,5 +1,5 @@
 """
-Seitenname: Portfolio-Ansicht
+Seitenname: Portfolioübersicht
 Autor: Bastian Pivarcsi, Maxim Sein
 Datum: 14.01.2026
 Beschreibung: Portfolioverwaltung Barmittel, Aktien und Wertpapiere
@@ -22,7 +22,7 @@ import appconfig as config
 def show_view_page():
     user = st.session_state.get(config.KEY_USER)
     if not user:
-        st.warning("Bitte anmelden.")
+        st.warning("Bitte logge dich ein, um dein Portfolio einsehen zu können.")
         return
 
     if "manager" not in st.session_state:
@@ -36,11 +36,10 @@ def show_view_page():
         return
 
     # --- 2. HEADER & PORTFOLIO-WAHL ---
-    st.title("Portfolio Verwaltung")
     id_to_label_map = {p[0]: f"{i}. {p[1]}" for i, p in enumerate(portfolios, start=1)}
 
     selected_id = st.selectbox(
-        "Portfolio waehlen",
+        "Portfolioauswahl",
         options=list(id_to_label_map.keys()),
         format_func=lambda x: id_to_label_map[x],
     )
@@ -49,7 +48,7 @@ def show_view_page():
 
     # --- 2b. HISTORISCHER VERLAUF (NEU) ---
     if manager.currentPortfolio and manager.currentPortfolio.assets:
-        st.markdown("### Portfolio Entwicklung")
+        st.markdown("### Entwicklung des ausgewählten Portfolios")
 
         # UI Controls wie im Dashboard
         col_p, col_i = st.columns(2)
@@ -329,6 +328,6 @@ def show_view_page():
                 # Gesamtwert
                 current_val = asset.amount * calc_price
                 c[7].write(f"**{current_val:,.2f} EUR**")
-                if c[8].button("Loeschen", key=f"del_{idx}"):
+                if c[8].button("Löschen", key=f"del_{idx}"):
                     manager.deleteAsset(asset.asset_id)
                     st.rerun()

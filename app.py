@@ -53,26 +53,26 @@ header[data-testid="stHeader"] * {
 
 
 def dashboard_page():
-    st.session_state["page_key"] = "Analyse"
+    st.session_state["page_key"] = "Marktanalyse"
     render_topbar()
     show_dashboard()
 
 
 def portfolios_manage_page():
-    st.session_state["page_key"] = "Portfolio-Verwaltung"
+    st.session_state["page_key"] = "Portfolioverwaltung"
     render_topbar()
     show_manage_page()
 
 
 def portfolio_view_page():
-    st.session_state["page_key"] = "Portfolio-Ansicht"
+    st.session_state["page_key"] = "Portfolioübersicht"
     render_topbar()
     show_view_page()
 
 
 def profile_page():
-    """Wrapper für die Profil-Einstellungen."""
-    st.session_state["page_key"] = "Profil"
+    """Wrapper für die Benutzereinstellungen."""
+    st.session_state["page_key"] = "Benutzereinstellungen"
     render_topbar()
     show_profile_page()
 
@@ -86,17 +86,15 @@ def main():
     auth.restore_session()
 
     pages = {
-        "Overview": [
-            st.Page(dashboard_page, title="Analyse", url_path="dashboard"),
+        "Recherche": [
+            st.Page(dashboard_page, title="Marktanalyse", url_path="dashboard"),
         ],
-        "Portfolios": [
-            st.Page(
-                portfolios_manage_page, title="Verwaltung", url_path="portfolios-manage"
-            ),
-            st.Page(portfolio_view_page, title="Ansicht", url_path="portfolio-view"),
+        "Portfolio": [
+            st.Page(portfolio_view_page, title="Übersicht", url_path="portfolio-view"),
+            st.Page(portfolios_manage_page, title="Verwaltung", url_path="portfolio-manager"),
         ],
-        "Benutzer": [
-            st.Page(profile_page, title="Profil", url_path="profile"),
+        "Profil": [
+            st.Page(profile_page, title="Benutzereinstellungen", url_path="profile"),
         ],
     }
 

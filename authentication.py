@@ -45,7 +45,7 @@ class Authentication:
         self.AUTH_FILE = appconfig.AUTH_FILE
         # Defaults nur setzen, wenn Key noch nicht existiert (nicht überschreiben)
         st.session_state.setdefault(self.KEY_LOGGED_IN, False)
-        st.session_state.setdefault(self.KEY_USERNAME, "Guest")
+        st.session_state.setdefault(self.KEY_USERNAME, "Gast")
         st.session_state.setdefault(self.KEY_USER, None)
         st.session_state.setdefault(self.KEY_AUTH_ERROR, None)
         st.session_state.setdefault(self.KEY_AUTH_INFO, None)
@@ -128,7 +128,7 @@ class Authentication:
     def logout(self) -> None:
         self.clear_messages()
         st.session_state[self.KEY_LOGGED_IN] = False
-        st.session_state[self.KEY_USERNAME] = "Guest"
+        st.session_state[self.KEY_USERNAME] = "Gast"
         st.session_state[self.KEY_USER] = None
         st.session_state["auth_tab"] = "Login"
 
@@ -192,7 +192,7 @@ class Authentication:
 
             st.session_state[self.KEY_LOGGED_IN] = True
             st.session_state[self.KEY_USER] = user
-            st.session_state[self.KEY_USERNAME] = user.get("username", "Guest")
+            st.session_state[self.KEY_USERNAME] = user.get("username", "Gast")
 
         except json.JSONDecodeError:
             logging.error("AUTH_FILE ist beschädigt (JSON ungültig)")

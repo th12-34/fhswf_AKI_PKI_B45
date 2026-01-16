@@ -157,7 +157,7 @@ def show_dashboard():
 
     prog_ana_data = prognose_analyse()
     query = st.text_input(
-        "Gib Aktien- oder Krypto-Ticker oder Namen ein",
+        "Firmenname, Aktien- oder Krypto-Ticker eingeben",
         placeholder="z. B. apple, bitcoin, AAPL, BTC-USD",
         key="ticker_query_input",
     )
@@ -238,7 +238,7 @@ def show_dashboard():
                 "Maximal": "max",
             }
             selected_period_label = st.selectbox(
-                "Periode auswählen:",
+                "Periode auswählen",
                 options=list(period_options.keys()),
                 index=6,
                 key="input_period",
@@ -253,7 +253,7 @@ def show_dashboard():
                 "1 Monat": "1mo",
             }
             selected_interval_label = st.selectbox(
-                "Intervall auswählen:",
+                "Intervall auswählen",
                 options=list(interval_options.keys()),
                 index=1,
                 key="input_interval",
@@ -315,56 +315,79 @@ def show_dashboard():
         st.plotly_chart(fig, width="stretch")
 
         # --- Chart RSI ---
-        st.markdown("**Relative Strength Index**")
-        rsi = compute_rsi(data["Close"])
-
-        fig_rsi = go.Figure()
-        fig_rsi.add_trace(
-            go.Scatter(
-                x=data.index,
-                y=rsi,
-                mode="lines",
-                name="RSI (14)",
-                #line=dict(color="black", width=2),
+        with st.expander("**RSI**", expanded=True):
+            st.markdown(
+                    "<h3 style='text-align:center; margin-bottom:0;'>"
+                    "Relative Strength Index (RSI)"
+                    "</h3>",
+                    unsafe_allow_html=True,
             )
-        )
 
-        # Überkauft (>70) – rot
-        fig_rsi.add_hrect(y0=70, y1=100, fillcolor="rgba(255, 80, 80, 0.22)", line_width=0)
+            rsi = compute_rsi(data["Close"])
 
-        # Überverkauft (<30) – grün
-        fig_rsi.add_hrect(y0=0, y1=30, fillcolor="rgba(80, 255, 140, 0.22)", line_width=0)
+            fig_rsi = go.Figure()
+            fig_rsi.add_trace(
+                go.Scatter(
+                    x=data.index,
+                    y=rsi,
+                    mode="lines",
+                    name="RSI (14)",
+                    #line=dict(color="black", width=2),
+                )
+            )
 
-        # fig_rsi.add_hline(y=70, line_dash="dash")
-        # fig_rsi.add_hline(y=30, line_dash="dash")
+            # Überkauft (>70) – rot
+            fig_rsi.add_hrect(y0=70, y1=100, fillcolor="rgba(255, 80, 80, 0.22)", line_width=0)
 
-        fig_rsi.update_layout(
-            template="streamlit",
-            height=500,
-            yaxis_title="RSI",
-            yaxis=dict(range=[0, 100]),
-        )
+            # Überverkauft (<30) – grün
+            fig_rsi.add_hrect(y0=0, y1=30, fillcolor="rgba(80, 255, 140, 0.22)", line_width=0)
 
-        st.plotly_chart(fig_rsi, width="stretch")
+            # fig_rsi.add_hline(y=70, line_dash="dash")
+            # fig_rsi.add_hline(y=30, line_dash="dash")
 
+            fig_rsi.update_layout(
+                template="streamlit",
+                height=500,
+                yaxis_title="RSI",
+                yaxis=dict(range=[0, 100]),
+            )
+
+            st.plotly_chart(fig_rsi, width="stretch")
+            st.caption(
+            """Der **Relative Strength Index (RSI)** ist ein *Momentum-Indikator*, der misst, ob ein Asset aktuell **überkauft oder überverkauft** ist.  
+            • **RSI > 70** → Überkauft (mögliche Korrektur)  
+            • **RSI < 30** → Überverkauft (mögliche Erholung)"""
+            )
         # --- Chart MACD ---
-        st.markdown("**Moving Average Convergene/Divergence**")
+        with st.expander("**MACD**", expanded=True):
+            st.markdown(
+                    "<h3 style='text-align:center; margin-bottom:0;'>"
+                    "Moving Average Convergene Divergence (MACD)"
+                    "</h3>",
+                    unsafe_allow_html=True,
+            )
 
-        macd, signal_line, hist = compute_macd(data["Close"])
+            macd, signal_line, hist = compute_macd(data["Close"])
 
-        fig_macd = go.Figure()
-        fig_macd.add_trace(go.Bar(x=data.index, y=hist, name="Histogramm", opacity=0.8))
-        fig_macd.add_trace(go.Scatter(x=data.index, y=macd, mode="lines", name="MACD"))
-        fig_macd.add_trace(
-            go.Scatter(x=data.index, y=signal_line, mode="lines", name="Signal")
-        )
+            fig_macd = go.Figure()
+            fig_macd.add_trace(go.Bar(x=data.index, y=hist, name="Histogramm", opacity=0.8))
+            fig_macd.add_trace(go.Scatter(x=data.index, y=macd, mode="lines", name="MACD"))
+            fig_macd.add_trace(
+                go.Scatter(x=data.index, y=signal_line, mode="lines", name="Signal")
+            )
 
-        fig_macd.update_layout(template="plotly_dark", height=500, yaxis_title="MACD")
+            fig_macd.update_layout(template="plotly_dark", height=500, yaxis_title="MACD")
 
-        st.plotly_chart(fig_macd, width="stretch")
+            st.plotly_chart(fig_macd, width="stretch")
+            st.caption(
+                """Der **Moving Average Convergence Divergence (MACD)** ist ein *Trend- und Momentum-Indikator*, 
+                der die Beziehung zweier gleitender Durchschnitte analysiert.  
+                • **MACD über Signallinie** → bullisches Signal  
+                • **MACD unter Signallinie** → bärisches Signal"""
+            )
 
         # --- Prognose und Analyse ----
-        with st.expander("Prognose und Analyse", expanded=True):
+        with st.expander("Kursentwicklungsprognose & Handlungsempfehlung", expanded=True):
             col1, col2 = st.columns(2)
 
             # Platzhalter (werden sofort gerendert)
@@ -404,7 +427,7 @@ def show_dashboard():
                 ]
 
                 with col1:
-                    st.subheader("Prognose Kursentwicklung")
+                    st.subheader("Kursentwicklungsprognose")
                     figProg = go.Figure()
                     figProg.add_trace(
                         go.Scatter(
@@ -447,7 +470,7 @@ def show_dashboard():
                     )
 
             st.divider()
-            if st.button("Prognose neu berechnen", use_container_width=True):
+            if st.button("Neuberechnung der Prognose", use_container_width=True):
                 st.session_state["prog_result"] = None
                 st.session_state["run_prog"] = True
                 st.rerun()

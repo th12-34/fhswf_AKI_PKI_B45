@@ -2,7 +2,7 @@
 Seitenname: Portfolio-Ansicht
 Autor:
 Datum: 14.01.2026
-Seitenname: Portfolio-Verwaltung (Management)
+Seitenname: Portfolioverwaltung (Management)
 Beschreibung: Verwaltung der Portfolios mit fortlaufender Nummerierung und ohne Icons.
 """
 
@@ -22,7 +22,7 @@ def show_manage_page():
     """
     user = st.session_state.get(KEY_USER)
     if not user:
-        st.warning("Bitte logge dich ein, um deine Portfolios zu verwalten.")
+        st.warning("Bitte logge dich ein, um dein Portfolio zu verwalten.")
         return
 
     if "manager" not in st.session_state:
@@ -31,8 +31,7 @@ def show_manage_page():
     manager = st.session_state.manager
 
     # --- 1. Bereich: Portfolio erstellen ---
-    st.title("Portfolio Management")
-
+    st.write("")
     with st.expander("Neues Portfolio erstellen", expanded=False):
         new_portfolio_name = st.text_input(
             "Name des neuen Portfolios", placeholder="z.B. Altersvorsorge"
@@ -46,10 +45,9 @@ def show_manage_page():
             else:
                 st.error("Bitte gib einen Namen ein.")
 
-    st.divider()
-
+    st.write("")
     # --- 2. Bereich: Portfolios anzeigen und löschen ---
-    st.subheader("Deine Portfolios")
+    st.subheader("Übersicht deiner angelegten Portfolios")
 
     portfolios = manager.getPortfolios()
 

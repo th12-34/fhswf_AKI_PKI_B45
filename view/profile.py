@@ -15,11 +15,9 @@ from authentication import Authentication
 
 
 def show_profile_page():
-    st.header("Benutzereinstellungen")
-
     user = st.session_state.get(KEY_USER)
     if not user:
-        st.warning("Bitte logge dich ein.")
+        st.warning("Bitte logge dich ein, um dein Profil einsehen zu können.")
         return
 
     db = DatabaseAdministration()
@@ -82,8 +80,9 @@ def show_profile_page():
             else:
                 st.error("Datenbankfehler beim Speichern.")
 
-    st.divider()
-    with st.expander("Löschen Benutzerkonto"):
+    st.write("")
+    st.write("")
+    with st.expander("Benutzerkonto löschen"):
         st.write("Vorgang ist endgültig!")
         if st.checkbox("Ich möchte mein Konto löschen."):
             if st.button("Konto jetzt löschen"):
