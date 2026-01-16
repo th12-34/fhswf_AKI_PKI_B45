@@ -89,6 +89,18 @@ def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
+def compute_bollinger_bands(
+    close: pd.Series, window: int = 20, num_std: float = 2.0
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    """
+    Berechnet Bollinger Bands (SMA ± num_std * Standardabweichung).
+    """
+    mid = close.rolling(window=window, min_periods=window).mean()
+    std = close.rolling(window=window, min_periods=window).std()
+    upper = mid + (num_std * std)
+    lower = mid - (num_std * std)
+    return mid, upper, lower
+
 
 def compute_macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9):
     """
@@ -384,6 +396,77 @@ def show_dashboard():
                 der die Beziehung zweier gleitender Durchschnitte analysiert.  
                 • **MACD über Signallinie** → bullisches Signal  
                 • **MACD unter Signallinie** → bärisches Signal"""
+            )
+
+        # --- Chart Bollinger Bands ---
+        with st.expander("**Bollinger Bands**", expanded=True):
+            st.markdown(
+                "<h3 style='text-align:center; margin-bottom:0;'>"
+                "Bollinger Bands"
+                "</h3>",
+                unsafe_allow_html=True,
+            )
+
+            bb_mid, bb_upper, bb_lower = compute_bollinger_bands(data["Close"], window=20, num_std=2.0)
+
+            fig_bb = go.Figure()
+
+            # Close
+            fig_bb.add_trace(
+                go.Scatter(
+                    x=data.index,
+                    y=data["Close"],
+                    mode="lines",
+                    name="Close",
+                    #line=dict(color="black", width=2),
+                )
+            )
+
+            # Upper / Lower + filled band
+            fig_bb.add_trace(
+                go.Scatter(
+                    x=data.index,
+                    y=bb_upper,
+                    mode="lines",
+                    name="Upper Band",
+                    line=dict(width=1),
+                )
+            )
+            fig_bb.add_trace(
+                go.Scatter(
+                    x=data.index,
+                    y=bb_lower,
+                    mode="lines",
+                    name="Lower Band",
+                    line=dict(width=1),
+                    fill="tonexty",
+                    fillcolor="rgba(100, 100, 255, 0.12)",
+                )
+            )
+
+            # Middle (SMA)
+            fig_bb.add_trace(
+                go.Scatter(
+                    x=data.index,
+                    y=bb_mid,
+                    mode="lines",
+                    name="Middle (SMA20)",
+                    line=dict(width=1, dash="dot"),
+                )
+            )
+
+            fig_bb.update_layout(
+                template="streamlit",
+                height=500,
+                yaxis_title="Preis",
+            )
+
+            st.plotly_chart(fig_bb, width="stretch")
+            st.caption(
+                """**Bollinger Bands** sind ein *Volatilitäts-Indikator* um einen gleitenden Durchschnitt (meist SMA20).  
+                • Kurs nahe/über **Upper Band** → oft “hoch gelaufen” (nicht automatisch Short)  
+                • Kurs nahe/unter **Lower Band** → oft “stark gefallen”  
+                • **Bandbreite** steigt → steigende Volatilität"""
             )
 
         # --- Prognose und Analyse ----
