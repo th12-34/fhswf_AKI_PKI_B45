@@ -145,7 +145,7 @@ class Authentication:
     ) -> bool:
         self.clear_messages()
 
-        if not username or not email or not password or not gemini_key:
+        if not username or not email or not password:
             self._set_error("Bitte alle Felder ausfüllen!")
             return False
 
