@@ -1,23 +1,30 @@
 ## Verbesserungen / Erweiterungen
-
+# Code Freeze 29.01 
 ### Allgemein
 
-- [ ] Exception Logging: alle Exceptions: except Exception: logging.exception -> Max
-- [ ] alle session_states dokumentieren -> Max
-- [ ] session.state als Konstanten zentral in Klasse definiert, nicht als string lokal gesetzt (Wartbarkeit) -> jeder für eigene Dateien
-- [x] Code umfangreich kommentieren (Kommentar-Kopf) -> jeder für eigene Datein
+- [-] Exception Logging: alle Exceptions: except Exception: logging.exception -> Max
+- [x] alle session_states dokumentieren -> Max
+- [x] session.state als Konstanten zentral in Klasse definiert, nicht als string lokal gesetzt (Wartbarkeit) -> jeder für eigene Dateien
+- [x] Code umfangreich kommentieren (Kommentar-Kopf) -> jeder für eigene Dateien
 - [x] Objektorientiert Portfolio
 - [x] Objektorientiert? statt Funktionen aufrufen
 - [x] Requirements.txt reparieren?
 - [ ] !! Requirements.txt aktualisieren (pip freeze)
 - [x] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (portfolio_view)
-- [ ] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (dashboard)
-- [ ] !! Python Linter drüber laufen lassen -> Gregor, Maxim
-- [ ] Optional: yfinance log-errors (YF.download() has changed argument auto_adjust default to True & Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead return float(data_before["Close"].iloc[-1]))
+- [ ] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (dashboard) -> Max
+- [x] !! Python Linter drüber laufen lassen -> Gregor, Maxim
+- [ ] Optional: yfinance log-errors (YF.download() has changed argument auto_adjust default to True & Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead return float(data_before["Close"].iloc[-1])) -> Thorben
 - [ ] Bugs suchen und auf Log-Errors überprüfen -> alle
 - [x?] Quellen hinzufügen -> alle
 - [ ] Autoren in Dateien anpassen -> alle
 - [ ] Ordner / Dateistruktur aufräumen
+- [ ] optional: profiländerung: ist und neues separat anzeigen (info und change)
+- [ ] portfolio übersicht: firmenname statt tickername (aus marktanalyse) -> gregor
+- [ ] optional: umbennen: page marktanalyse -> assetanalyse
+- [ ] Recherche Marktanalyse metriken an gewählten zeitraum anpassen (copy paste aus analyse) -> Maxim
+- [ ] portfolio-übersicht: hinzufügen historisches datum: kaufpreis wird nicht angepasst -> Maxim
+- [ ] portfolio-übersicht: prozentualen wachstum einheitlich anzeigen -> Maxim
+- [ ] optional Automatscihe Test cases?
 
 ### Authentifizierung
 
@@ -31,6 +38,7 @@
 - [x] Indikatoren einarbeiten (Gleitender Durchschnitt 50, 200, RSI, MACD)
 - [x] Fehlermeldung Indikatoren, wenn Datenpunkte nicht ausreichen
 - [x] Zeit-Periode: YTD - Workaround benötigt, nicht direkt abrufbar
+- [ ] Vergleich verschiedene Verläufe/Assets (neue Page) -> Gregor
 
 ### Portfolio
 
@@ -40,7 +48,7 @@
 - [x] Nach neu hinzugefügten Asset Formular zurücksetzen
 - [x] Neues Asset: Automatisch Preis anzeigen, aktualisieren wenn Datum geändert, für Input sperren wenn mode: automatisch, entsperren mode: manuell -> Maxim
 - [x] Tabelle Assets: Datum hinzufügen, sonst bei den identischen Assets nur Kurs als Unterscheidungsmerkmal -> Gregor
-- [ ] Portfolio löschen und neues Portfolio anlegen: neue UUID?, ABER in Tabelle einfach durchnummeriert, beim löschen rücken höhere Portfolios nach / oder generell IDs in Datenbank aktualisieren -> Gregor
+- [x] Portfolio löschen und neues Portfolio anlegen: neue UUID?, ABER in Tabelle einfach durchnummeriert, beim löschen rücken höhere Portfolios nach / oder generell IDs in Datenbank aktualisieren -> Gregor
 - [x] Wertentwicklung über die Zeit: Sum Gesamtes Kapital + Verlauf in Grafik + %-Veränderung -> Maxim
 
 ### Sentiment-Analyse
@@ -50,8 +58,9 @@
 
 ## Doku / Abschluss
 
+- [ ] !! Python Linter drüber laufen lassen -> Gregor, Maxim
 - [ ] README
 - [ ] requirements.txt
-- [ ]  Fertiges Abgabepaket schnueren
+- [ ] Fertiges Abgabepaket schnueren
 - [ ] install req in jungfräulichem VirtEnv Testen
 - [ ] Projekt hochladen
