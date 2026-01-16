@@ -37,7 +37,7 @@
 - [x] Button/Funktion: Neues Portfolio Element hinzufügen
 - [x] Button: Aus Portfolio-Element Ansicht zurück zu Aktien-Ansicht ohne Logout
 - [x] Nach neu hinzugefügten Asset Formular zurücksetzen
-- [ ] Neues Asset: Automatisch Preis anzeigen, aktualisieren wenn Datum geändert, für Input sperren wenn mode: automatisch, entsperren mode: manuell -> Maxim
+- [x] Neues Asset: Automatisch Preis anzeigen, aktualisieren wenn Datum geändert, für Input sperren wenn mode: automatisch, entsperren mode: manuell -> Maxim
 - [x] Tabelle Assets: Datum hinzufügen, sonst bei den identischen Assets nur Kurs als Unterscheidungsmerkmal -> Gregor
 - [ ] Portfolio löschen und neues Portfolio anlegen: neue UUID?, ABER in Tabelle einfach durchnummeriert, beim löschen rücken höhere Portfolios nach / oder generell IDs in Datenbank aktualisieren -> Gregor
 - [x] Wertentwicklung über die Zeit: Sum Gesamtes Kapital + Verlauf in Grafik + %-Veränderung -> Maxim
