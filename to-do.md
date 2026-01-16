@@ -17,6 +17,7 @@
 - [ ] Bugs suchen und auf Log-Errors überprüfen -> alle
 - [x?] Quellen hinzufügen -> alle
 - [ ] Autoren in Dateien anpassen -> alle
+- [ ] Ordner / Dateistruktur aufräumen
 
 ### Authentifizierung
 
@@ -47,7 +48,10 @@
 - [x] Sentimentanalyse: teil der news mit angeben
 - [x] Prognose: Linie/Kursziel plotten
 
-## Doku
+## Doku / Abschluss
 
 - [ ] README
 - [ ] requirements.txt
+- [ ]  Fertiges Abgabepaket schnueren
+- [ ] install req in jungfräulichem VirtEnv Testen
+- [ ] Projekt hochladen
