@@ -1,7 +1,7 @@
 """
 Seitenname: Dashboard
 
-Autor: x / Maximilian Pfau
+Autor: Maximilian Pfau / Maxim Sein
 
 Datum: 13.01.2026
 
