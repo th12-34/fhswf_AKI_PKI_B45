@@ -8,9 +8,9 @@
 
 ### Zielsetzung
 
-Entwicklung einer webbasierten Anwendung zur Analyse von Finanzdaten. Ziel ist es, technische Indikatoren zu visualisieren und KI-gestützte Prognosen mithilfe der Gemini-API zu erstellen.
+Entwicklung einer webbasierten Anwendung zur Analyse von Finanzdaten sowie der Hinterlegung eines einfachen Portfolios von Vermögenswerten. Ziel ist es, technische Indikatoren zu visualisieren und KI-gestützte Prognosen mithilfe der Gemini-API zu erstellen.
 
-### Aufbau des Projekts
+### Aufbau des Projekts !!!!!!!!! UNBEDINGT IM FINAL ANPASSEN
 
 Das Projekt ist modular in eine Streamlit-Oberfläche (Frontend) und verschiedene Logik-Klassen (Backend) unterteilt. Die Architektur trennt Datenverarbeitung, Authentifizierung und grafische Aufbereitung der Indikatoren.
 
@@ -72,7 +72,7 @@ Zusätzliche Steuerungs-Keys:
 ## Aufgabenverteilung
 
 - **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page
-- **Gregor:** UI, Refactoring
+- **Gregor:** UI, Refactoring, Bollinger Bands
 - **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
 - **Maxim:** Portfolio-Optimierung (TBD)
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
