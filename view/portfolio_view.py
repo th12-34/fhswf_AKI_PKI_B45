@@ -1,6 +1,6 @@
 """
 Seitenname: Portfolio-Ansicht
-Autor: Bastian Pivarcsi
+Autor: Bastian Pivarcsi, Maxim Sein
 Datum: 14.01.2026
 Beschreibung: Portfolioverwaltung Barmittel, Aktien und Wertpapiere
 """
@@ -141,48 +141,10 @@ def show_view_page():
         # --- 2d. AGGREGATED TABLE (Bestand) ---
         st.subheader("Bestand")
 
-        # Aggregation der Assets
-        holdings = {}
-        for asset in manager.currentPortfolio.assets:
-            if asset.type == "cash":
-                continue
+        # Aggregation und Sortierung der Bestände
+        holdings_list = PortfolioCalculator.get_aggregated_holdings(manager.currentPortfolio.assets)
 
-            if asset.symbol not in holdings:
-                holdings[asset.symbol] = {
-                    "name": asset.name,
-                    "type": asset.type,
-                    "amount": 0.0,
-                    "invested": 0.0,
-                }
-            holdings[asset.symbol]["amount"] += asset.amount
-            holdings[asset.symbol]["invested"] += asset.amount * asset.buy_price
-
-        if holdings:
-            # Daten für Sortierung vorbereiten
-            holdings_list = []
-            for sym, data in holdings.items():
-                live_data = PortfolioCalculator.fetch_live_data(sym)
-                current_price = live_data["price_eur"] if live_data else 0.0
-                total_val = data["amount"] * current_price
-                avg_buy_price = (
-                    data["invested"] / data["amount"] if data["amount"] > 0 else 0.0
-                )
-
-                holdings_list.append(
-                    {
-                        "sym": sym,
-                        "name": data["name"],
-                        "type": data["type"],
-                        "amount": data["amount"],
-                        "current_price": current_price,
-                        "avg_buy_price": avg_buy_price,
-                        "total_val": total_val,
-                        "invested": data["invested"],
-                    }
-                )
-
-            # Sortieren nach Gesamtwert absteigend
-            holdings_list.sort(key=lambda x: x["total_val"], reverse=True)
+        if holdings_list:
 
             cols_i = st.columns([0.8, 2.0, 0.6, 0.8, 1, 1, 1.2, 1.0])
             labels_i = ["Symbol", "Name", "Typ", "Menge", "Kurs", "Ø Kaufkurs", "Wert", "Entwicklung"]

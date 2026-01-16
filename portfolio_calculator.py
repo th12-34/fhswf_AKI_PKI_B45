@@ -1,7 +1,9 @@
 """
 Modul: Portfolio Calculator
-Beschreibung: Enthält die Logik für Finanzberechnungen, API-Abrufe (yfinance)
-und Währungsumrechnungen. Dient als Service-Layer für die Portfolio-View.
+Autor: Maxim Sein
+Datum: 16.01.2026
+Beschreibung: Enthält die Logik für Finanzberechnungen, API-Abrufe (yfinance), 
+Währungsumrechnungen und Sortierung der Bestände. Dient als Service-Layer für die Portfolio-View.
 """
 
 import datetime
@@ -250,3 +252,48 @@ class PortfolioCalculator:
         diff = current_value - invested
         pct = (diff / invested) * 100 if invested != 0 else 0.0
         return diff, pct
+
+    @staticmethod
+    def get_aggregated_holdings(assets):
+        """
+        Gruppiert Assets nach Symbol, berechnet Durchschnittspreise und Gesamtwert.
+        Gibt eine sortierte Liste zurück.
+        """
+        holdings = {}
+        for asset in assets:
+            if asset.type == "cash":
+                continue
+
+            if asset.symbol not in holdings:
+                holdings[asset.symbol] = {
+                    "name": asset.name,
+                    "type": asset.type,
+                    "amount": 0.0,
+                    "invested": 0.0,
+                }
+            holdings[asset.symbol]["amount"] += asset.amount
+            holdings[asset.symbol]["invested"] += asset.amount * asset.buy_price
+
+        results = []
+        for sym, data in holdings.items():
+            live_data = PortfolioCalculator.fetch_live_data(sym)
+            current_price = live_data["price_eur"] if live_data else 0.0
+            total_val = data["amount"] * current_price
+            avg_buy_price = (
+                data["invested"] / data["amount"] if data["amount"] > 0 else 0.0
+            )
+
+            results.append({
+                "sym": sym,
+                "name": data["name"],
+                "type": data["type"],
+                "amount": data["amount"],
+                "current_price": current_price,
+                "avg_buy_price": avg_buy_price,
+                "total_val": total_val,
+                "invested": data["invested"],
+            })
+
+        # Sortieren nach Gesamtwert absteigend
+        results.sort(key=lambda x: x["total_val"], reverse=True)
+        return results
