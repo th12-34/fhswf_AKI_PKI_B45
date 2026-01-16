@@ -72,7 +72,7 @@ Zusätzliche Steuerungs-Keys:
 ## Aufgabenverteilung
 
 - **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page
-- **Gregor:** UI (TBD)
+- **Gregor:** UI, Refactoring
 - **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
 - **Maxim:** Portfolio-Optimierung (TBD)
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
