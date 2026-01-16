@@ -10,7 +10,8 @@
 - [x] Objektorientiert? statt Funktionen aufrufen
 - [x] Requirements.txt reparieren?
 - [ ] !! Requirements.txt aktualisieren (pip freeze)
-- [ ] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval
+- [x] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (portfolio_view)
+- [ ] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (dashboard)
 - [ ] !! Python Linter drüber laufen lassen -> Gregor, Maxim
 - [ ] Optional: yfinance log-errors (YF.download() has changed argument auto_adjust default to True & Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead return float(data_before["Close"].iloc[-1]))
 - [ ] Bugs suchen und auf Log-Errors überprüfen -> alle
@@ -37,9 +38,9 @@
 - [x] Button: Aus Portfolio-Element Ansicht zurück zu Aktien-Ansicht ohne Logout
 - [x] Nach neu hinzugefügten Asset Formular zurücksetzen
 - [ ] Neues Asset: Automatisch Preis anzeigen, aktualisieren wenn Datum geändert, für Input sperren wenn mode: automatisch, entsperren mode: manuell -> Maxim
-- [ ] Tabelle Assets: Datum hinzufügen, sonst bei den identischen Assets nur Kurs als Unterscheidungsmerkmal -> Gregor
+- [x] Tabelle Assets: Datum hinzufügen, sonst bei den identischen Assets nur Kurs als Unterscheidungsmerkmal -> Gregor
 - [ ] Portfolio löschen und neues Portfolio anlegen: neue UUID?, ABER in Tabelle einfach durchnummeriert, beim löschen rücken höhere Portfolios nach / oder generell IDs in Datenbank aktualisieren -> Gregor
-- [ ] Wertentwicklung über die Zeit: Sum Gesamtes Kapital + Verlauf in Grafik + %-Veränderung -> Gregor / Maxim
+- [x] Wertentwicklung über die Zeit: Sum Gesamtes Kapital + Verlauf in Grafik + %-Veränderung -> Maxim
 
 ### Sentiment-Analyse
 
