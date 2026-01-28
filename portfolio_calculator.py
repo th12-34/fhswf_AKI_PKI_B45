@@ -4,6 +4,13 @@ Autor: Maxim Sein
 Datum: 16.01.2026
 Beschreibung: Enthält die Logik für Finanzberechnungen, API-Abrufe (yfinance), 
 Währungsumrechnungen und Sortierung der Bestände. Dient als Service-Layer für die Portfolio-View.
+
+Quellen:
+- Programmierung
+    - https://yfinance.yahoofinance.com/
+    - https://docs.streamlit.io/
+    - Lehrbrief zur Vorlesung
+    - Gemini
 """
 
 import datetime

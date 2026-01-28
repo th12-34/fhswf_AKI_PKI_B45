@@ -1,6 +1,14 @@
 """
 Modul: Search
 Beschreibung: Zentrale Komponente für die Ticker-Suche via yfinance.
+Autor: Maximilian Pfau / Maxim Sein
+
+Quellen:
+- Programmierung
+    - https://yfinance.yahoofinance.com/
+    - https://docs.streamlit.io/
+    - Lehrbrief zur Vorlesung
+    - Gemini
 """
 
 import streamlit as st

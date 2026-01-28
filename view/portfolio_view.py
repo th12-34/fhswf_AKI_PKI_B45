@@ -1,8 +1,16 @@
 """
 Seitenname: Portfolioübersicht
-Autor: Bastian Pivarcsi, Maxim Sein
+Autor: Maxim Sein, Bastian Pivarcsi
 Datum: 14.01.2026
-Beschreibung: Portfolioverwaltung Barmittel, Aktien und Wertpapiere
+Beschreibung: Portfolioverwaltung Barmittel, Aktien und Wertpapiere. Überblick über Gesamtdepot.
+
+Quellen:
+- Programmierung
+    - https://yfinance.yahoofinance.com/
+    - https://plotly.com/python/
+    - https://docs.streamlit.io/
+    - Lehrbrief zur Vorlesung
+    - Gemini
 """
 
 import datetime
