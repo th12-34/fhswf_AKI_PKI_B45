@@ -261,6 +261,25 @@ class PortfolioCalculator:
         return diff, pct
 
     @staticmethod
+    def calculate_period_profit(hist_df, current_total_val, current_invested_val):
+        """
+        Berechnet die Veränderung des Gewinns im Zeitraum (absolut und relativ zum Invest).
+        """
+        if hist_df is None or hist_df.empty:
+            return 0.0, 0.0
+
+        # Profit zu Beginn des Zeitraums
+        start_profit = hist_df['Total'].iloc[0] - hist_df['Invested'].iloc[0]
+
+        # Profit am Ende (Aktuell)
+        end_profit = current_total_val - current_invested_val
+
+        profit_change_abs = end_profit - start_profit
+        profit_change_rel = (profit_change_abs / current_invested_val * 100) if current_invested_val != 0 else 0.0
+
+        return profit_change_abs, profit_change_rel
+
+    @staticmethod
     def get_aggregated_holdings(assets):
         """
         Gruppiert Assets nach Symbol, berechnet Durchschnittspreise und Gesamtwert.

@@ -105,14 +105,10 @@ def show_view_page():
             invested_capital = invested_now
             diff, pct = PortfolioCalculator.calculate_performance(invested_capital, end_val)
 
-            # Zeitraum-Performance (Absoluter Gewinn)
-            # Gewinn = Total - Invested
-            hist_df['Profit'] = hist_df['Total'] - hist_df['Invested']
-            
-            start_profit = hist_df['Profit'].iloc[0]
-            end_profit = end_val - invested_capital
-
-            profit_change = end_profit - start_profit
+            # Zeitraum-Performance (Absoluter und relativer Gewinn)
+            profit_change_abs, profit_change_rel = PortfolioCalculator.calculate_period_profit(
+                hist_df, end_val, invested_capital
+            )
 
             # Metrik anzeigen
             c1, c2, c3 = st.columns(3)
@@ -121,7 +117,11 @@ def show_view_page():
                 value=f"{end_val:,.2f} EUR",
                 delta=f"{pct:.2f}% ({diff:,.2f} EUR)",
             )
-            c2.metric(label=f"Gewinn ({period})", value=f"{profit_change:,.2f} EUR")
+            c2.metric(
+                label=f"Gewinn ({period})",
+                value=f"{profit_change_abs:,.2f} EUR",
+                delta=f"{profit_change_rel:.2f} %",
+            )
             c3.metric(label="Datenpunkte", value=len(hist_df))
 
             # Graph zeichnen
