@@ -5,6 +5,16 @@ Datum: 16.01.2026
 Beschreibung: Enthält die Logik für Finanzberechnungen, API-Abrufe (yfinance), 
 Währungsumrechnungen und Sortierung der Bestände. Dient als Service-Layer für die Portfolio-View.
 
+Funktionsübersicht:
+- get_eur_exchange_rate: Ermittelt den aktuellen Wechselkurs einer Währung zu Euro (Hilfsfunktion).
+- fetch_live_data: Lädt aktuelle Marktdaten (Preis, Name, Typ) für ein Symbol (genutzt für Asset-Suche und Bewertung).
+- get_historical_price_eur: Ermittelt einen historischen Preis zu einem Stichtag in Euro (genutzt für historische Käufe).
+- calculate_portfolio_history: Berechnet den historischen Wertverlauf des Portfolios (genutzt für Performance-Graph).
+- calculate_performance: Berechnet absolute und relative Wertentwicklung (Basis-Berechnung für Metriken).
+- calculate_period_profit: Berechnet die Gewinnveränderung über einen spezifischen Zeitraum (genutzt für Portfolio-Metriken).
+- calculate_change_over_period: Berechnet die Performance einer Zeitreihe (genutzt für Dashboard-Metriken).
+- get_aggregated_holdings: Gruppiert Einzelpositionen, berechnet Durchschnittskurse und Gesamtwerte (genutzt für Bestands-Tabelle).
+
 Quellen:
 - Programmierung
     - https://yfinance.yahoofinance.com/
