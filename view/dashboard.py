@@ -25,6 +25,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 from prognose_analyse import prognose_analyse
+from portfolio_calculator import PortfolioCalculator
 from search import render_ticker_search
 from datetime import datetime
 
@@ -257,13 +258,18 @@ def show_dashboard():
         st.write(f"### Daten für {symbol}")
 
         latest = data["Close"].iloc[-1]
+        
+        # Tägliche Veränderung für Kontext beim Preis
         prev = data["Close"].iloc[-2] if len(data) > 1 else latest
-        diff = latest - prev
-        pct = (diff / prev) * 100 if prev != 0 else 0
+        diff_day = latest - prev
+        
+        # Veränderung über den gesamten Zeitraum
+        diff_period, pct_period = PortfolioCalculator.calculate_change_over_period(data["Close"])
+        period_label = st.session_state.get("period", "Period")
 
         c1, c2, c3 = st.columns(3)
-        c1.metric("Schlusskurs", f"{latest:,.2f} $", f"{diff:,.2f} $")
-        c2.metric("Veränderung", f"{pct:.2f} %")
+        c1.metric("Schlusskurs", f"{latest:,.2f} $", f"{diff_day:,.2f} $ (1T)")
+        c2.metric(f"Veränderung ({period_label})", f"{diff_period:,.2f} $", f"{pct_period:.2f} %")
         c3.metric("Datenpunkte", len(data))
 
         st.markdown("**Indikatoren**")

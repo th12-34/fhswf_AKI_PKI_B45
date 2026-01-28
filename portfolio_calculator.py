@@ -280,6 +280,19 @@ class PortfolioCalculator:
         return profit_change_abs, profit_change_rel
 
     @staticmethod
+    def calculate_change_over_period(data_series):
+        """
+        Berechnet die Veränderung (absolut und relativ) über den gesamten Zeitraum einer Datenserie.
+        """
+        if data_series is None or data_series.empty:
+            return 0.0, 0.0
+
+        start_val = data_series.iloc[0]
+        end_val = data_series.iloc[-1]
+
+        return PortfolioCalculator.calculate_performance(start_val, end_val)
+
+    @staticmethod
     def get_aggregated_holdings(assets):
         """
         Gruppiert Assets nach Symbol, berechnet Durchschnittspreise und Gesamtwert.
