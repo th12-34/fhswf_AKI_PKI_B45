@@ -252,6 +252,7 @@ def show_view_page():
                         "Kaufdatum",
                         value=datetime.date.today(),
                         max_value=datetime.date.today(),
+                        key="hist_date_picker",
                     )
                     selected_date_str = sel_date.strftime("%Y-%m-%d")
                     with st.spinner("Lade historischen Kurs..."):
@@ -266,7 +267,7 @@ def show_view_page():
                             value=final_price,
                             disabled=True,
                             format="%.2f",
-                            key="price_hist",
+                            key=f"price_hist_{data['symbol']}_{selected_date_str}",
                         )
                     else:
                         st.error("Kein Kurs für dieses Datum gefunden.")
