@@ -144,7 +144,7 @@ class PortfolioCalculator:
     def calculate_portfolio_history(assets_data, period, interval):
         """
         Berechnet den historischen Verlauf des Portfolios basierend auf den aktuellen Beständen (Backtest).
-        assets_data: Liste von Tupeln (symbol, amount, currency, type, bought_at)
+        assets_data: Liste von Tupeln (symbol, amount, currency, type, bought_at, buy_price)
         """
         if not assets_data:
             return None
@@ -153,7 +153,7 @@ class PortfolioCalculator:
         tickers = set()
         currencies = set()
 
-        for sym, amt, cur, typ, bought_at in assets_data:
+        for sym, amt, cur, typ, bought_at, buy_price in assets_data:
             if typ == "cash":
                 continue
 
@@ -192,9 +192,10 @@ class PortfolioCalculator:
 
             # 4. Gesamtwert berechnen
             total_series = pd.Series(0.0, index=data.index)
+            invested_series = pd.Series(0.0, index=data.index)
             earliest_purchase = None
 
-            for sym, amt, cur, typ, bought_at in assets_data:
+            for sym, amt, cur, typ, bought_at, buy_price in assets_data:
                 # Earliest Date tracken
                 if bought_at:
                     if earliest_purchase is None or bought_at < earliest_purchase:
@@ -205,10 +206,14 @@ class PortfolioCalculator:
                 if start_ts and data.index.tz is not None:
                     start_ts = start_ts.tz_localize(data.index.tz)
 
+                # Investiertes Kapital (buy_price ist in EUR)
+                invested_val = amt * buy_price
+
                 if typ == "cash":
                     if cur == "EUR" and start_ts:
                         # Cash erst ab Kaufdatum addieren
                         total_series.loc[data.index >= start_ts] += amt
+                        invested_series.loc[data.index >= start_ts] += invested_val
                     continue
 
                 if sym not in data.columns:
@@ -228,17 +233,12 @@ class PortfolioCalculator:
                     val_series = price_series * amt
                     val_series.loc[data.index < start_ts] = 0.0
                     total_series += val_series
+                    invested_series.loc[data.index >= start_ts] += invested_val
                 else:
                     total_series += price_series * amt
+                    invested_series += invested_val
 
-            # 5. Graph erst ab dem ersten Kaufdatum anzeigen
-            if earliest_purchase:
-                start_ts_global = pd.Timestamp(earliest_purchase)
-                if data.index.tz is not None:
-                    start_ts_global = start_ts_global.tz_localize(data.index.tz)
-                total_series = total_series[total_series.index >= start_ts_global]
-
-            return total_series
+            return pd.DataFrame({"Total": total_series, "Invested": invested_series})
 
         except Exception as e:
             # st.error(f"Fehler bei Historienberechnung: {e}")

@@ -66,33 +66,62 @@ def show_view_page():
 
         # Daten für Cache vorbereiten (Primitive Typen)
         assets_for_calc = [
-            (a.symbol, a.amount, a.currency, a.type, a.bought_at)
+            (a.symbol, a.amount, a.currency, a.type, a.bought_at, a.buy_price)
             for a in manager.currentPortfolio.assets
         ]
 
         with st.spinner("Berechne Portfolio-Historie..."):
-            hist_series = PortfolioCalculator.calculate_portfolio_history(assets_for_calc, period, interval)
+            hist_df = PortfolioCalculator.calculate_portfolio_history(assets_for_calc, period, interval)
 
-        if hist_series is not None and not hist_series.empty:
+        # Fallback: Wenn Assets vorhanden sind (hist_series ist nicht None), aber leer (z.B. Kauf heute),
+        # oder der letzte Wert 0 ist (Kauf heute, Historie endet gestern), fügen wir den aktuellen Wert hinzu.
+        # Aktuellen Marktwert berechnen:
+        holdings = PortfolioCalculator.get_aggregated_holdings(manager.currentPortfolio.assets)
+        market_val = sum(h['total_val'] for h in holdings)
+        cash_val = sum(a.amount for a in manager.currentPortfolio.assets if a.type == 'cash')
+        total_now = market_val + cash_val
+        invested_now = manager.currentPortfolio.get_total_value()
+
+        if hist_df is not None and (hist_df.empty or (hist_df['Total'].iloc[-1] == 0 and total_now > 0)):
+            if total_now > 0:
+                now_df = pd.DataFrame({"Total": [total_now], "Invested": [invested_now]}, index=[pd.Timestamp.now()])
+                if hist_df.empty:
+                    hist_df = now_df
+                else:
+                    hist_df = pd.concat([hist_df, now_df])
+
+        if hist_df is not None and not hist_df.empty:
             # Performance Metriken
-            end_val = hist_series.iloc[-1]
-            invested_capital = manager.currentPortfolio.get_total_value()
+            end_val = total_now
+            invested_capital = invested_now
             diff, pct = PortfolioCalculator.calculate_performance(invested_capital, end_val)
 
+            # Zeitraum-Performance (Absoluter Gewinn)
+            # Gewinn = Total - Invested
+            hist_df['Profit'] = hist_df['Total'] - hist_df['Invested']
+            
+            start_profit = hist_df['Profit'].iloc[0]
+            end_profit = end_val - invested_capital
+
+            profit_change = end_profit - start_profit
+
             # Metrik anzeigen
-            st.metric(
+            c1, c2, c3 = st.columns(3)
+            c1.metric(
                 label="Aktueller Gesamtwert",
                 value=f"{end_val:,.2f} EUR",
                 delta=f"{pct:.2f}% ({diff:,.2f} EUR)",
             )
+            c2.metric(label=f"Gewinn ({period})", value=f"{profit_change:,.2f} EUR")
+            c3.metric(label="Datenpunkte", value=len(hist_df))
 
             # Graph zeichnen
             fig_hist = go.Figure()
             fig_hist.add_trace(
                 go.Scatter(
-                    x=hist_series.index,
-                    y=hist_series.values,
-                    mode="lines",
+                    x=hist_df.index,
+                    y=hist_df['Total'],
+                    mode="lines" if len(hist_df) > 1 else "markers",
                     name="Portfolio Wert",
                     line=dict(color="#00CC96", width=2),
                     fill="tozeroy",  # Optional: Fläche füllen
