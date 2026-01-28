@@ -63,6 +63,7 @@ class Portfolio:
                 amount=data["amount"],
                 buy_price=data["buy_price"],
                 bought_at=data["bought_at"],
+                currency=data["currency"],
                 asset_id=data["asset_id"],
             )
             self.assets.append(new_asset)

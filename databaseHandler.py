@@ -416,7 +416,7 @@ class DatabaseAdministration:
         with self._get_connection() as conn:
             cur = conn.cursor()
             cur.execute(
-                "SELECT id, asset_type, asset_symbol, asset_name, amount, buy_price, bought_at FROM assets WHERE portfolio_id = ? ORDER BY bought_at",
+                "SELECT id, asset_type, asset_symbol, asset_name, amount, buy_price, bought_at, currency FROM assets WHERE portfolio_id = ? ORDER BY bought_at",
                 (portfolio_id,),
             )
             rows = cur.fetchall()
@@ -430,6 +430,7 @@ class DatabaseAdministration:
                     "amount": r[4],
                     "buy_price": r[5],
                     "bought_at": r[6],
+                    "currency": r[7],
                 }
                 for r in rows
             ]

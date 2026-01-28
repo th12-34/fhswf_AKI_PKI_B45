@@ -290,6 +290,7 @@ def show_view_page():
                             float(qty),
                             float(final_price),
                             selected_date_str,
+                            currency=data["currency"],
                         )
                         manager.addAssetToPortfolio(new_asset)
                         st.success("Erfolgreich hinzugefuegt.")
