@@ -21,9 +21,9 @@
 - [ ] optional: profiländerung: ist und neues separat anzeigen (info und change)
 - [ ] portfolio übersicht: firmenname statt tickername (aus marktanalyse) -> gregor
 - [ ] optional: umbennen: page marktanalyse -> assetanalyse
-- [ ] Recherche Marktanalyse metriken an gewählten zeitraum anpassen (copy paste aus analyse) -> Maxim
-- [ ] portfolio-übersicht: hinzufügen historisches datum: kaufpreis wird nicht angepasst -> Maxim
-- [ ] portfolio-übersicht: prozentualen wachstum einheitlich anzeigen -> Maxim
+- [x] Recherche Marktanalyse metriken an gewählten zeitraum anpassen (copy paste aus analyse) -> Maxim
+- [x] portfolio-übersicht: hinzufügen historisches datum: kaufpreis wird nicht angepasst -> Maxim
+- [x] portfolio-übersicht: prozentualen wachstum einheitlich anzeigen -> Maxim
 - [ ] optional Automatscihe Test cases?
 
 ### Authentifizierung
