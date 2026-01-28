@@ -16,6 +16,7 @@ import pandas as pd
 from portfoliomanager import PortfolioManager
 from portfolioasset import PortfolioAsset
 from portfolio_calculator import PortfolioCalculator
+from search import render_ticker_search
 import appconfig as config
 
 
@@ -207,11 +208,11 @@ def show_view_page():
     tab_assets, tab_cash = st.tabs(["Wertpapiere und Krypto", "Barmittel"])
 
     with tab_assets:
-        query = st.text_input(
-            "Ticker-Symbol (z.B. BTC, MSTR, AAPL)", key="search_input"
-        ).strip()
-        if query:
-            data = PortfolioCalculator.fetch_live_data(query)
+        # Nutzung der ausgelagerten Such-Logik
+        found_symbol = render_ticker_search(key_prefix="port_add", label="Ticker-Suche (z.B. Apple, BTC)")
+        
+        if found_symbol:
+            data = PortfolioCalculator.fetch_live_data(found_symbol)
             if data:
                 # Info-Box bei Umrechnung
                 if data["currency"] != "EUR":

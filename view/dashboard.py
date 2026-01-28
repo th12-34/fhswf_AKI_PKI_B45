@@ -25,6 +25,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 from prognose_analyse import prognose_analyse
+from search import render_ticker_search
 from datetime import datetime
 
 # --- Indikatoren ---
@@ -168,65 +169,25 @@ def show_dashboard():
         st.session_state["data"] = None
 
     prog_ana_data = prognose_analyse()
-    query = st.text_input(
-        "Firmenname, Aktien- oder Krypto-Ticker eingeben",
-        placeholder="z. B. apple, bitcoin, AAPL, BTC-USD",
-        key="ticker_query_input",
+    
+    # Nutzung der ausgelagerten Such-Logik
+    found_symbol = render_ticker_search(
+        key_prefix="dash_search", 
+        label="Firmenname, Aktien- oder Krypto-Ticker eingeben"
     )
 
-    if query:
-        try:
-            if (
-                "last_query" not in st.session_state
-                or st.session_state["last_query"] != query
-            ):
-                result = yf.Search(query, max_results=10)
-                st.session_state["search_quotes"] = result.quotes
-                st.session_state["last_query"] = query
-
-            quotes = st.session_state["search_quotes"]
-
-            if quotes:
-                selection_options = []
-                symbol_map = {}
-
-                for quote in quotes:
-                    symbol = quote["symbol"]
-                    name = quote.get("shortname", "N/A")
-                    label = f"{symbol} – {name}"
-                    selection_options.append(label)
-                    symbol_map[label] = symbol
-
-                PLACEHOLDER = "--- Wähle einen Ticker aus der Liste ---"
-                all_options = [PLACEHOLDER] + selection_options
-
-                selected_label = st.selectbox(
-                    "Vorschläge:",
-                    options=all_options,
-                    index=0,
-                    key="autocomplete_selection",
-                    label_visibility="collapsed",
-                )
-
-                if selected_label != PLACEHOLDER:
-                    selected_symbol_code = symbol_map[selected_label]
-
-                    if st.session_state.get("selected_symbol") != selected_symbol_code:
-                        st.session_state["selected_symbol"] = selected_symbol_code
-                        st.session_state["data"] = None
-
-                        st.session_state["prog_result"] = None
-                        st.session_state["run_prog"] = True
-
-                        st.rerun()
-
-            else:
-                st.write("Keine Vorschläge gefunden.")
-                st.session_state["selected_symbol"] = None
-
-        except Exception as e:
-            st.write("Fehler bei der Suche:", e)
-            st.session_state["selected_symbol"] = None
+    if found_symbol:
+        if st.session_state.get("selected_symbol") != found_symbol:
+            st.session_state["selected_symbol"] = found_symbol
+            st.session_state["data"] = None
+            st.session_state["prog_result"] = None
+            st.session_state["run_prog"] = True
+            st.rerun()
+    elif found_symbol is None and "dash_search_query_input" in st.session_state and st.session_state["dash_search_query_input"]:
+        # Wenn gesucht wurde, aber nichts ausgewählt (oder nichts gefunden), Reset optional
+        # Hier behalten wir das alte Symbol bei, solange nichts neues gewählt wird, 
+        # oder man könnte st.session_state["selected_symbol"] = None setzen, wenn man strikt sein will.
+        pass
 
     selected_symbol = st.session_state.get("selected_symbol")
 
