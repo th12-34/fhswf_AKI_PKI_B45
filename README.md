@@ -54,7 +54,7 @@ Für die Nutzung der Analyse-Funktionen müssen die API-Credentials für Gemini 
 ### 2.2 Durchführung
 
 ```bash
-python3 -m venv pki-env
+python3.13 -m venv pki-env
 source pki-env/bin/activate   # Linux / macOS
 pip install -r requirements.txt
 streamlit run app.py
@@ -130,8 +130,8 @@ Zusätzliche Steuerungs-Keys:
 
 ## 5. Aufgabenverteilung
 
-- **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page
-- **Gregor:** Asset-Vergleich Page, Profile Page, Bollinger Bands, UI, Refactoring
+- **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile
+- **Gregor:** Asset-Vergleich Page, Profile, Bollinger Bands, UI, Refactoring
 - **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
 - **Maxim:** Portfolio-Optimierung: Berechnung, Verwaltung und Visualisierung, Prototyp Grundversion 
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
