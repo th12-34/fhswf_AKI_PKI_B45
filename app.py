@@ -19,7 +19,7 @@ Quellen:
 import streamlit as st
 from topbar import render_topbar
 from view.asset_comparison import show_asset_comparison_page
-from view.dashboard import show_dashboard
+from view.asset_analyze import show_asset_analyze_page
 from view.portfolio_view import show_view_page
 from view.portfolios_manage import show_manage_page
 from view.profile import show_profile_page
@@ -53,10 +53,10 @@ header[data-testid="stHeader"] * {
 # --- Page Wrapper Funktionen ---
 
 
-def dashboard_page():
-    st.session_state["page_key"] = "Marktanalyse"
+def asset_analyze_page():
+    st.session_state["page_key"] = "Asset-Analyse"
     render_topbar()
-    show_dashboard()
+    show_asset_analyze_page()
 
 
 def asset_comparison_page():
@@ -94,7 +94,7 @@ def main():
 
     pages = {
         "Recherche": [
-            st.Page(dashboard_page, title="Marktanalyse", url_path="dashboard"),
+            st.Page(asset_analyze_page, title="Asset-Analyse", url_path="asset-analyze"),
             st.Page(asset_comparison_page, title="Asset-Vergleich", url_path="asset-comparison"),
         ],
         "Portfolio": [

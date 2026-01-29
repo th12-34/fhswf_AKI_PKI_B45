@@ -1,5 +1,5 @@
 """
-Seitenname: Dashboard
+Seitenname: Asset Analyze
 
 Autor: Maximilian Pfau / Maxim Sein / Gregor Schumacher
 
@@ -23,21 +23,19 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
 from prognose_analyse import prognose_analyse
 from portfolio_calculator import PortfolioCalculator
+from indicators import compute_rsi, compute_macd, compute_bollinger_bands
 from search import render_ticker_search
 from datetime import datetime
 
-# --- Indikatoren ---
-# Indikator Gleitender Durchschnitt Optionen
+# MA-Indikator Optionen und Farbe der Traces
 MA_WINDOWS = [20, 50, 200]
 MA_COLORS = {
     20: "#cb1e2d",
     50: "#2ca02c",
     200: "#9467bd",
 }
-
 
 def indicator_toogles(windows: list[int]) -> dict[int, bool]:
     """
@@ -47,7 +45,6 @@ def indicator_toogles(windows: list[int]) -> dict[int, bool]:
     return {
         w: cols[i].toggle(f"MA{w}", key=f"show_ma_{w}") for i, w in enumerate(windows)
     }
-
 
 def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
     """
@@ -74,52 +71,6 @@ def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
                 line=dict(color=MA_COLORS.get(w, None), width=2),
             )
         )
-
-
-def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
-    """
-    Berechnet den Relative Strength Index (RSI).
-    """
-    delta = close.diff()
-    gain = delta.clip(lower=0)
-    loss = -delta.clip(upper=0)
-
-    avg_gain = gain.rolling(window=period, min_periods=period).mean()
-    avg_loss = loss.rolling(window=period, min_periods=period).mean()
-
-    rs = avg_gain / avg_loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
-
-def compute_bollinger_bands(
-    close: pd.Series, window: int = 20, num_std: float = 2.0
-) -> tuple[pd.Series, pd.Series, pd.Series]:
-    """
-    Berechnet Bollinger Bands (SMA ± num_std * Standardabweichung).
-    """
-    mid = close.rolling(window=window, min_periods=window).mean()
-    std = close.rolling(window=window, min_periods=window).std()
-    upper = mid + (num_std * std)
-    lower = mid - (num_std * std)
-    return mid, upper, lower
-
-
-def compute_macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9):
-    """
-    Berechnet den MACD-Indikator.
-    """
-    ema_fast = close.ewm(span=fast, adjust=False).mean()
-    ema_slow = close.ewm(span=slow, adjust=False).mean()
-
-    macd = ema_fast - ema_slow
-    signal_line = macd.ewm(span=signal, adjust=False).mean()
-    hist = macd - signal_line
-
-    return macd, signal_line, hist
-
-
-# -------------------------------
-
 
 def load_data(symbol, period, interval):
     """
@@ -159,10 +110,9 @@ def load_data(symbol, period, interval):
         st.error(f"Fehler beim Laden der Daten für {symbol}: " + str(e))
         st.session_state["data"] = None
 
-
-def show_dashboard():
+def show_asset_analyze_page():
     """
-    Rendert das Dashboard-Interface.
+    Rendert das Asset-Analyze-Interface.
     """
     if "selected_symbol" not in st.session_state:
         st.session_state["selected_symbol"] = None
@@ -468,7 +418,7 @@ def show_dashboard():
                     )
                     st.session_state["run_prog"] = False
 
-                st.rerun()  # sorgt dafür, dass danach ohne Spinner sauber gerendert wird
+                st.rerun()
 
             # 3) Ergebnis rendern, wenn vorhanden
             if st.session_state.get("prog_result") is not None:
