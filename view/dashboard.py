@@ -1,7 +1,7 @@
 """
 Seitenname: Dashboard
 
-Autor: Maximilian Pfau / Maxim Sein
+Autor: Maximilian Pfau / Maxim Sein / Gregor Schumacher
 
 Datum: 13.01.2026
 
@@ -365,7 +365,7 @@ def show_dashboard():
                 • **MACD unter Signallinie** → bärisches Signal"""
             )
 
-        # --- Chart Bollinger Bands ---
+        # Chart Bollinger Bands
         with st.expander("**Bollinger Bands**", expanded=True):
             st.markdown(
                 "<h3 style='text-align:center; margin-bottom:0;'>"
