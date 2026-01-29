@@ -131,7 +131,7 @@ Zusätzliche Steuerungs-Keys:
 ## 5. Aufgabenverteilung
 
 - **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page
-- **Gregor:** Asset-Vergleich, Bollinger Bands, UI, Refactoring
+- **Gregor:** Asset-Vergleich Page, Profile Page, Bollinger Bands, UI, Refactoring
 - **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
 - **Maxim:** Portfolio-Optimierung: Berechnung, Verwaltung und Visualisierung, Prototyp Grundversion 
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
