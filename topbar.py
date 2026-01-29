@@ -20,7 +20,7 @@ Quellen:
 
 import streamlit as st
 from authentication import Authentication
-import appconfig
+import appconfig as appconfig
 
 # Setzt direkt bei Instanziierung Default-Werte
 auth = Authentication()

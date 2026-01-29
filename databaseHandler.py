@@ -1,9 +1,5 @@
 """
-Klasse: DatabaseAdministration
-
 Autor: Bastian Pivarcsi
-
-Datum: 13.01.2026
 
 Beschreibung:
 Diese Klasse übernimmt die Verwaltung einer SQLite-Datenbank für ein Portfolio-Management-System.
@@ -12,8 +8,7 @@ von Portfolios, Assets und der Speicherung von Gemini API Keys.
 
 
 Quellen:
-- Programmierung
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - Gemini
     - https://docs.python.org/3/library/sqlite3.html
     - https://docs.python.org/3/library/hashlib.html

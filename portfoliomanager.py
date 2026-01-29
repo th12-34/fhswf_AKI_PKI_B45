@@ -1,9 +1,5 @@
 """
-Programmname: PortfolioManager
-
 Autor: Bastian Pivarcsi
-
-Datum: 13.01.2026
 
 Beschreibung:
 Diese Klasse dient als zentrale Steuerungseinheit für die Portfolio-Verwaltung
@@ -12,8 +8,7 @@ sowie das Management von Assets innerhalb des aktuell ausgewählten Portfolios.
 
 
 Quellen:
-- Programmierung
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
 """
 
 from databaseHandler import DatabaseAdministration

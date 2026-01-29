@@ -9,36 +9,36 @@
 - [x] Objektorientiert Portfolio
 - [x] Objektorientiert? statt Funktionen aufrufen
 - [x] Requirements.txt reparieren?
-- [ ] !! Requirements.txt aktualisieren (pip freeze)
+- [x] Requirements.txt aktualisieren (pip freeze)
 - [x] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (portfolio_view)
-- [ ] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (dashboard) -> Max
+- [x] Optional: Dedizierte Calculations Klasse, convert to euro dynamisch Währungspaar und Interval (dashboard) -> Max
 - [x] !! Python Linter drüber laufen lassen -> Gregor, Maxim
 - [ ] Optional: yfinance log-errors (YF.download() has changed argument auto_adjust default to True & Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead return float(data_before["Close"].iloc[-1])) -> Thorben
-- [ ] Bugs suchen und auf Log-Errors überprüfen -> alle
-- [x?] Quellen hinzufügen -> alle
-- [ ] Autoren in Dateien anpassen -> alle
-- [ ] Ordner / Dateistruktur aufräumen
-- [ ] optional: profiländerung: ist und neues separat anzeigen (info und change)
-- [ ] portfolio übersicht: firmenname statt tickername (aus marktanalyse) -> gregor
-- [ ] optional: umbennen: page marktanalyse -> assetanalyse
+- [x] Bugs suchen und auf Log-Errors überprüfen -> alle
+- [x] Quellen hinzufügen -> alle
+- [x] Autoren in Dateien anpassen -> alle
+- [x] Ordner / Dateistruktur aufräumen
+- [x] optional: profiländerung: ist und neues separat anzeigen (info und change)
+- [x] portfolio übersicht: firmenname statt tickername (aus marktanalyse) -> gregor
+- [x] optional: umbennen: page marktanalyse -> assetanalyse
 - [x] Recherche Marktanalyse metriken an gewählten zeitraum anpassen (copy paste aus analyse) -> Maxim
 - [x] portfolio-übersicht: hinzufügen historisches datum: kaufpreis wird nicht angepasst -> Maxim
 - [x] portfolio-übersicht: prozentualen wachstum einheitlich anzeigen -> Maxim
-- [ ] optional Automatscihe Test cases?
+- [x] optional Automatscihe Test cases?
 
 ### Authentifizierung
 
 - [x] Registrierungen: Auf Email-Syntax überprüfen
 - [x] Registrierungspage: copy paste auf dedizierte page und button einfügen
 - [x] User-Session über Reload persistent (auth.json)
-
+[text](http://localhost:8501/)
 ### Aktien Analyse
 
 - [x] Dashboard grafisch besser strukturieren / UI optimierung
 - [x] Indikatoren einarbeiten (Gleitender Durchschnitt 50, 200, RSI, MACD)
 - [x] Fehlermeldung Indikatoren, wenn Datenpunkte nicht ausreichen
 - [x] Zeit-Periode: YTD - Workaround benötigt, nicht direkt abrufbar
-- [ ] Vergleich verschiedene Verläufe/Assets (neue Page) -> Gregor
+- [x] Vergleich verschiedene Verläufe/Assets (neue Page) -> Gregor
 
 ### Portfolio
 
@@ -58,9 +58,10 @@
 
 ## Doku / Abschluss
 
-- [ ] !! Python Linter drüber laufen lassen -> Gregor, Maxim
-- [ ] README
-- [ ] requirements.txt
+- [x] !! Python Linter drüber laufen lassen -> Gregor, Maxim
+- [ ] README -> Test-Case -> Gregor
+- [x] requirements.txt
 - [ ] Fertiges Abgabepaket schnueren
-- [ ] install req in jungfräulichem VirtEnv Testen
+- [x] install req in jungfräulichem VirtEnv Testen
+- [ ] to-do.md löschen
 - [ ] Projekt hochladen

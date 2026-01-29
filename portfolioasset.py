@@ -1,9 +1,5 @@
 """
-Programmname: PortfolioAsset
-
 Autor: Bastian Pivarcsi
-
-Datum: 13.01.2026
 
 Beschreibung:
 Diese Klasse repräsentiert ein einzelnes Asset (z. B. eine Aktie oder eine
@@ -12,8 +8,7 @@ Kaufdaten und bietet Funktionen zur Berechnung des Positionswerts.
 
 
 Quellen:
-- Programmierung
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - https://docs.python.org/3/tutorial/classes.html
 """
 

@@ -1,9 +1,5 @@
 """
-Programmname: Authentication
-
 Autor: Maximilian Pfau
-
-Datum: 13.01.2026
 
 Beschreibung:
 Verwaltet Benutzer-Sitzungen und Validierung. Nutzt zentrale Methoden zur
@@ -11,8 +7,7 @@ Prüfung von E-Mail-Syntax und Passwortstärke.
 
 
 Quellen:
-- Programmierung
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - https://docs.streamlit.io/develop/api-reference/caching-and-state/st.session_state
     - ChatGPT 5.2
 """
@@ -24,7 +19,7 @@ import re
 import logging
 from email.utils import parseaddr
 from databaseHandler import DatabaseAdministration
-import appconfig
+import appconfig as appconfig
 
 
 class Authentication:

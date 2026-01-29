@@ -1,6 +1,4 @@
 """
-Seitenname: Benutzereinstellungen (Profile Page)
-
 Autor: Bastian Pivarcsi / Gregor Schumacher
 
 Beschreibung:
@@ -8,10 +6,11 @@ Ermöglicht das Ändern von Profilinformationen unter Verwendung zentraler
 Validierungsmethoden der Authentication-Klasse.
 
 Quellen:
-- Vorwissen
-- ChatGPT 5.2
-- Lehrbrief zur Vorlesung
+    - Vorwissen
+    - ChatGPT 5.2
+    - Lehrbrief "Python für alle"
 """
+
 import streamlit as st
 import time
 from appconfig import KEY_USER
@@ -62,11 +61,17 @@ def show_profile_page():
 
     # Benutzerinformationen ändern
     st.markdown("### Benutzerinformationen ändern")
-    st.caption("Nur Felder ausfüllen, die Sie wirklich ändern möchten. Leere Felder bleiben unverändert.")
+    st.caption(
+        "Nur Felder ausfüllen, die Sie wirklich ändern möchten. Leere Felder bleiben unverändert."
+    )
 
     with st.form("edit_profile_form", clear_on_submit=True):
-        new_email_input = st.text_input("Neue E-Mail Adresse (optional)", value="").strip().lower()
-        new_gemini_key_input = st.text_input("Neuer Gemini API Key (optional)", value="", type="password").strip()
+        new_email_input = (
+            st.text_input("Neue E-Mail Adresse (optional)", value="").strip().lower()
+        )
+        new_gemini_key_input = st.text_input(
+            "Neuer Gemini API Key (optional)", value="", type="password"
+        ).strip()
 
         st.divider()
         st.write("**Passwort ändern (optional)**")
@@ -111,9 +116,13 @@ def show_profile_page():
             # Andernfalls Update der Benutzerinformationen
             else:
                 final_email = new_email_input if email_changed else current_email
-                final_gemini_key = new_gemini_key_input if gemini_changed else current_gemini_key
+                final_gemini_key = (
+                    new_gemini_key_input if gemini_changed else current_gemini_key
+                )
 
-                ok = db.update_user_settings(username, final_email, pw_hash, final_gemini_key)
+                ok = db.update_user_settings(
+                    username, final_email, pw_hash, final_gemini_key
+                )
                 if not ok:
                     status_container.error("Datenbankfehler beim Speichern.")
                 else:
@@ -144,4 +153,3 @@ def show_profile_page():
                     st.rerun()
                 else:
                     st.error("Datenbankfehler beim Löschen des Kontos.")
-

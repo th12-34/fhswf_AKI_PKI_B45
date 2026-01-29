@@ -1,9 +1,12 @@
 """
-Seitenname: Portfolio-Ansicht
-Autor:
-Datum: 14.01.2026
-Seitenname: Portfolioverwaltung (Management)
-Beschreibung: Verwaltung der Portfolios mit fortlaufender Nummerierung und ohne Icons.
+Autor: Bastian Pivarcsi
+
+Beschreibung:
+Verwaltung der Portfolios mit fortlaufender Nummerierung und ohne Icons.
+
+Quellen:
+    - Lehrbrief "Python für alle"
+    - ChatGPT 5.2
 """
 
 import datetime
@@ -11,7 +14,6 @@ import streamlit as st
 import pandas as pd
 import time
 
-from databaseHandler import DatabaseAdministration
 from portfoliomanager import PortfolioManager
 from appconfig import KEY_USER
 

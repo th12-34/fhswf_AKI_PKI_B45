@@ -1,9 +1,5 @@
 """
-Seitenname: Asset Analyze
-
 Autor: Maximilian Pfau / Maxim Sein / Gregor Schumacher
-
-Datum: 13.01.2026
 
 Beschreibung:
 Dieses Modul bildet das Herzstück der Benutzeroberfläche. Es ermöglicht die Suche
@@ -13,7 +9,6 @@ sowie Sentiment-Analyse.
 
 
 Quellen:
-- Programmierung
     - https://plotly.com/python/
     - https://yfinance.yahoofinance.com/
     - ChatGPT 5.2
@@ -24,8 +19,8 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from prognose_analyse import prognose_analyse
-from portfolio_calculator import PortfolioCalculator
-from indicators import compute_rsi, compute_macd, compute_bollinger_bands
+from calculations.portfolio_calculator import PortfolioCalculator
+from calculations.indicators import compute_rsi, compute_macd, compute_bollinger_bands
 from search import render_ticker_search
 from datetime import datetime
 
@@ -37,6 +32,7 @@ MA_COLORS = {
     200: "#9467bd",
 }
 
+
 def indicator_toogles(windows: list[int]) -> dict[int, bool]:
     """
     Erzeugt Toogle-Buttons in der Tabelle dynamisch.
@@ -45,6 +41,7 @@ def indicator_toogles(windows: list[int]) -> dict[int, bool]:
     return {
         w: cols[i].toggle(f"MA{w}", key=f"show_ma_{w}") for i, w in enumerate(windows)
     }
+
 
 def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
     """
@@ -71,6 +68,7 @@ def add_ma_traces(fig, data, enabled: dict[int, bool]) -> None:
                 line=dict(color=MA_COLORS.get(w, None), width=2),
             )
         )
+
 
 def load_data(symbol, period, interval):
     """
@@ -110,6 +108,7 @@ def load_data(symbol, period, interval):
         st.error(f"Fehler beim Laden der Daten für {symbol}: " + str(e))
         st.session_state["data"] = None
 
+
 def show_asset_analyze_page():
     """
     Rendert das Asset-Analyze-Interface.
@@ -120,11 +119,11 @@ def show_asset_analyze_page():
         st.session_state["data"] = None
 
     prog_ana_data = prognose_analyse()
-    
+
     # Nutzung der ausgelagerten Such-Logik
     found_symbol = render_ticker_search(
-        key_prefix="dash_search", 
-        label="Firmenname, Aktien- oder Krypto-Ticker eingeben"
+        key_prefix="dash_search",
+        label="Firmenname, Aktien- oder Krypto-Ticker eingeben",
     )
 
     if found_symbol:
@@ -134,9 +133,13 @@ def show_asset_analyze_page():
             st.session_state["prog_result"] = None
             st.session_state["run_prog"] = True
             st.rerun()
-    elif found_symbol is None and "dash_search_query_input" in st.session_state and st.session_state["dash_search_query_input"]:
+    elif (
+        found_symbol is None
+        and "dash_search_query_input" in st.session_state
+        and st.session_state["dash_search_query_input"]
+    ):
         # Wenn gesucht wurde, aber nichts ausgewählt (oder nichts gefunden), Reset optional
-        # Hier behalten wir das alte Symbol bei, solange nichts neues gewählt wird, 
+        # Hier behalten wir das alte Symbol bei, solange nichts neues gewählt wird,
         # oder man könnte st.session_state["selected_symbol"] = None setzen, wenn man strikt sein will.
         pass
 
@@ -208,18 +211,24 @@ def show_asset_analyze_page():
         st.write(f"### Daten für {symbol}")
 
         latest = data["Close"].iloc[-1]
-        
+
         # Tägliche Veränderung für Kontext beim Preis
         prev = data["Close"].iloc[-2] if len(data) > 1 else latest
         diff_day = latest - prev
-        
+
         # Veränderung über den gesamten Zeitraum
-        diff_period, pct_period = PortfolioCalculator.calculate_change_over_period(data["Close"])
+        diff_period, pct_period = PortfolioCalculator.calculate_change_over_period(
+            data["Close"]
+        )
         period_label = st.session_state.get("period", "Period")
 
         c1, c2, c3 = st.columns(3)
         c1.metric("Schlusskurs", f"{latest:,.2f} $", f"{diff_day:,.2f} $ (1T)")
-        c2.metric(f"Veränderung ({period_label})", f"{diff_period:,.2f} $", f"{pct_period:.2f} %")
+        c2.metric(
+            f"Veränderung ({period_label})",
+            f"{diff_period:,.2f} $",
+            f"{pct_period:.2f} %",
+        )
         c3.metric("Datenpunkte", len(data))
 
         st.markdown("**Indikatoren**")
@@ -232,7 +241,7 @@ def show_asset_analyze_page():
                 y=data["Close"],
                 mode="lines",
                 name="Close",
-                #line=dict(color="black", width=2),
+                # line=dict(color="black", width=2),
             )
         )
 
@@ -246,10 +255,10 @@ def show_asset_analyze_page():
         # --- Chart RSI ---
         with st.expander("**RSI**", expanded=True):
             st.markdown(
-                    "<h3 style='text-align:center; margin-bottom:0;'>"
-                    "Relative Strength Index (RSI)"
-                    "</h3>",
-                    unsafe_allow_html=True,
+                "<h3 style='text-align:center; margin-bottom:0;'>"
+                "Relative Strength Index (RSI)"
+                "</h3>",
+                unsafe_allow_html=True,
             )
 
             rsi = compute_rsi(data["Close"])
@@ -261,15 +270,19 @@ def show_asset_analyze_page():
                     y=rsi,
                     mode="lines",
                     name="RSI (14)",
-                    #line=dict(color="black", width=2),
+                    # line=dict(color="black", width=2),
                 )
             )
 
             # Überkauft (>70) – rot
-            fig_rsi.add_hrect(y0=70, y1=100, fillcolor="rgba(255, 80, 80, 0.22)", line_width=0)
+            fig_rsi.add_hrect(
+                y0=70, y1=100, fillcolor="rgba(255, 80, 80, 0.22)", line_width=0
+            )
 
             # Überverkauft (<30) – grün
-            fig_rsi.add_hrect(y0=0, y1=30, fillcolor="rgba(80, 255, 140, 0.22)", line_width=0)
+            fig_rsi.add_hrect(
+                y0=0, y1=30, fillcolor="rgba(80, 255, 140, 0.22)", line_width=0
+            )
 
             # fig_rsi.add_hline(y=70, line_dash="dash")
             # fig_rsi.add_hline(y=30, line_dash="dash")
@@ -283,29 +296,35 @@ def show_asset_analyze_page():
 
             st.plotly_chart(fig_rsi, width="stretch")
             st.caption(
-            """Der **Relative Strength Index (RSI)** ist ein *Momentum-Indikator*, der misst, ob ein Asset aktuell **überkauft oder überverkauft** ist.  
+                """Der **Relative Strength Index (RSI)** ist ein *Momentum-Indikator*, der misst, ob ein Asset aktuell **überkauft oder überverkauft** ist.  
             • **RSI > 70** → Überkauft (mögliche Korrektur)  
             • **RSI < 30** → Überverkauft (mögliche Erholung)"""
             )
         # --- Chart MACD ---
         with st.expander("**MACD**", expanded=True):
             st.markdown(
-                    "<h3 style='text-align:center; margin-bottom:0;'>"
-                    "Moving Average Convergene Divergence (MACD)"
-                    "</h3>",
-                    unsafe_allow_html=True,
+                "<h3 style='text-align:center; margin-bottom:0;'>"
+                "Moving Average Convergene Divergence (MACD)"
+                "</h3>",
+                unsafe_allow_html=True,
             )
 
             macd, signal_line, hist = compute_macd(data["Close"])
 
             fig_macd = go.Figure()
-            fig_macd.add_trace(go.Bar(x=data.index, y=hist, name="Histogramm", opacity=0.8))
-            fig_macd.add_trace(go.Scatter(x=data.index, y=macd, mode="lines", name="MACD"))
+            fig_macd.add_trace(
+                go.Bar(x=data.index, y=hist, name="Histogramm", opacity=0.8)
+            )
+            fig_macd.add_trace(
+                go.Scatter(x=data.index, y=macd, mode="lines", name="MACD")
+            )
             fig_macd.add_trace(
                 go.Scatter(x=data.index, y=signal_line, mode="lines", name="Signal")
             )
 
-            fig_macd.update_layout(template="plotly_dark", height=500, yaxis_title="MACD")
+            fig_macd.update_layout(
+                template="plotly_dark", height=500, yaxis_title="MACD"
+            )
 
             st.plotly_chart(fig_macd, width="stretch")
             st.caption(
@@ -324,7 +343,9 @@ def show_asset_analyze_page():
                 unsafe_allow_html=True,
             )
 
-            bb_mid, bb_upper, bb_lower = compute_bollinger_bands(data["Close"], window=20, num_std=2.0)
+            bb_mid, bb_upper, bb_lower = compute_bollinger_bands(
+                data["Close"], window=20, num_std=2.0
+            )
 
             fig_bb = go.Figure()
 
@@ -335,7 +356,7 @@ def show_asset_analyze_page():
                     y=data["Close"],
                     mode="lines",
                     name="Close",
-                    #line=dict(color="black", width=2),
+                    # line=dict(color="black", width=2),
                 )
             )
 
@@ -387,7 +408,9 @@ def show_asset_analyze_page():
             )
 
         # --- Prognose und Analyse ----
-        with st.expander("Kursentwicklungsprognose & Handlungsempfehlung", expanded=True):
+        with st.expander(
+            "Kursentwicklungsprognose & Handlungsempfehlung", expanded=True
+        ):
             col1, col2 = st.columns(2)
 
             # Platzhalter (werden sofort gerendert)

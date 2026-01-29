@@ -29,7 +29,7 @@ Das Projekt ist modular aufgebaut und trennt Frontend (Streamlit Views), Backend
 *   `portfolioasset.py`: Datenklasse für einzelne Vermögenswerte (Aktien, Krypto, Cash).
 
 **Views (Benutzeroberfläche):**
-*   `view/dashboard.py`: Hauptansicht für Marktdaten, Charts und Indikatoren.
+*   `view/asset_analyze.py`: Hauptansicht für Marktdaten, Charts und Indikatoren.
 *   `view/asset_comparison.py`: Ermöglicht den direkten Vergleich zweier Assets.
 *   `view/portfolio_view.py`: Detaillierte Ansicht der eigenen Portfolios inkl. Performance-Historie.
 *   `view/portfolios_manage.py`: Verwaltungsoberfläche zum Anlegen und Löschen von Portfolios.
@@ -75,13 +75,16 @@ Um die Funktionalität der Anwendung zu überprüfen, können folgende Szenarien
 2.  Geben Sie im Suchfeld einen Ticker ein (z. B. `AAPL` für Apple oder `BTC-EUR` für Bitcoin).
 3.  **Technische Analyse:**
     *   Überprüfen Sie den Chartverlauf.
-    *   Aktivieren Sie Indikatoren wie **MA20/50/200**, **RSI** und **MACD** über die Toggle-Buttons.
+    *   Aktivieren Sie Indikatoren wie **MA20/50/200**, **RSI**, **MACD** und **Bollinger Bands** über die Toggle-Buttons.
 4.  **KI-Prognose:**
     *   Öffnen Sie den Expander "Kursentwicklungsprognose & Handlungsempfehlung".
     *   Die Anwendung berechnet nun mittels **ARIMA** eine Kursprognose für die nächsten 14 Tage.
     *   Gleichzeitig analysiert **Google Gemini** aktuelle News und gibt eine Kauf-/Verkaufsempfehlung ("Sentiment") ab.
+ 
+### 3.2 Testfall 2: Asset-Vergleich
+**Ziel:** ....
 
-### 3.2 Testfall 2: Portfolio-Management (Login & Historischer Kauf)
+### 3.3 Testfall 3: Portfolio-Management (Login & Historischer Kauf)
 **Ziel:** Erstellen eines Portfolios und Simulation eines historischen Kaufs.
 
 1.  **Registrierung/Login:**
@@ -130,10 +133,10 @@ Zusätzliche Steuerungs-Keys:
 
 ## 5. Aufgabenverteilung
 
-- **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile
-- **Gregor:** Asset-Vergleich Page, Profile, Bollinger Bands, UI, Refactoring
-- **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
-- **Maxim:** Portfolio-Optimierung: Berechnung, Verwaltung und Visualisierung, Prototyp Grundversion 
+- **Bastian Pivarcsi:** Systemdesign, Datenbank, Portfolio-Klassen, Profile
+- **Gregor Schumacher:** Asset-Vergleich Page, Profile, Bollinger Bands, UI, Refactoring
+- **Maximilian Pfau:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
+- **Maxim Sein :** Portfolio-Optimierung: Berechnung, Verwaltung und Visualisierung, Prototyp Grundversion 
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
 
 ## 6. Dokumentation & Quellen
@@ -142,7 +145,7 @@ Zusätzliche Steuerungs-Keys:
 - https://docs.streamlit.io/
 - https://plotly.com/python/
 - https://pandas.pydata.org/pandas-docs/stable/user_guide/10min.html
-- Lehrbrief zur Vorlesung
+- Lehrbrief "Python für alle"
 - Google Gemini
 - Google Gemini API
 - ChatGPT

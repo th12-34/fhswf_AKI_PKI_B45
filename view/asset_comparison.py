@@ -1,6 +1,4 @@
 """
-Seitenname: Asset-Vergleich
-
 Autor: Gregor Schumacher
 
 Beschreibung:
@@ -13,13 +11,12 @@ Hinweis:
 - Wiederverwendet render_ticker_search exakt wie im Dashboard, aber zweimal mit unterschiedlichem key_prefix.
 
 Quellen:
-- Vorwissen
-- https://plotly.com/python/
-- https://yfinance.yahoofinance.com/
-- https://pandas.pydata.org/pandas-docs/stable/user_guide/10min.html
-- ChatGPT 5.2
+    - Vorwissen
+    - https://plotly.com/python/
+    - https://yfinance.yahoofinance.com/
+    - https://pandas.pydata.org/pandas-docs/stable/user_guide/10min.html
+    - ChatGPT 5.2
 """
-
 
 import streamlit as st
 import yfinance as yf
@@ -31,6 +28,7 @@ from search import render_ticker_search
 
 
 # Helperfunktionen
+
 
 def _download_data(symbol: str, period: str, interval: str) -> pd.DataFrame:
     """Lädt Daten über yfinance."""
@@ -94,24 +92,25 @@ def _ensure_state_defaults() -> None:
 
 # Asset-Vergleich Page
 
+
 def show_asset_comparison_page():
     _ensure_state_defaults()
 
-    st.caption("In dieser Ansicht können Sie zwei beliebige Assets miteinander vergleichen. ")
+    st.caption(
+        "In dieser Ansicht können Sie zwei beliebige Assets miteinander vergleichen. "
+    )
 
     # Suche
     c1, c2 = st.columns(2)
 
     with c1:
         found_a = render_ticker_search(
-            key_prefix="cmp_a",
-            label="Asset A - Firmenname, Aktie oder Krypto-Ticker"
+            key_prefix="cmp_a", label="Asset A - Firmenname, Aktie oder Krypto-Ticker"
         )
 
     with c2:
         found_b = render_ticker_search(
-            key_prefix="cmp_b",
-            label="Asset B - Firmenname, Aktie oder Krypto-Ticker"
+            key_prefix="cmp_b", label="Asset B - Firmenname, Aktie oder Krypto-Ticker"
         )
 
     # Auswahl stabil in Session speichern
@@ -179,13 +178,16 @@ def show_asset_comparison_page():
     if st.session_state["cmp_interval"] is None:
         st.session_state["cmp_interval"] = interval
 
-    if st.session_state["cmp_period"] != period or st.session_state["cmp_interval"] != interval:
+    if (
+        st.session_state["cmp_period"] != period
+        or st.session_state["cmp_interval"] != interval
+    ):
         st.session_state["cmp_period"] = period
         st.session_state["cmp_interval"] = interval
         st.session_state["cmp_data_a"] = None
         st.session_state["cmp_data_b"] = None
 
-    # Daten laden 
+    # Daten laden
     if symbol_a and st.session_state.get("cmp_data_a") is None:
         with st.spinner(f"Lade Daten für {symbol_a} ({period}/{interval}) …"):
             data_a = _download_data(symbol_a, period, interval)
@@ -209,7 +211,7 @@ def show_asset_comparison_page():
     data_a = st.session_state.get("cmp_data_a")
     data_b = st.session_state.get("cmp_data_b")
 
-    # Vorsichtsmaßnahmen 
+    # Vorsichtsmaßnahmen
     if not symbol_a or not symbol_b:
         st.info("Bitte wähle **zwei Assets** aus, um sie zu vergleichen.")
         return
@@ -240,17 +242,19 @@ def show_asset_comparison_page():
     abs_b, pct_b = _calc_change_over_period(df[label_b])
 
     returns = df.pct_change().dropna()
-    corr = float(returns[label_a].corr(returns[label_b])) if not returns.empty else float("nan")
+    corr = (
+        float(returns[label_a].corr(returns[label_b]))
+        if not returns.empty
+        else float("nan")
+    )
 
     c1, c2, c3 = st.columns(3)
     c1.metric(f"{label_a} Schlusskurs", f"{latest_a:,.2f} $", f"{pct_a:.2f} %")
     c2.metric(f"{label_b} Schlusskurs", f"{latest_b:,.2f} $", f"{pct_b:.2f} %")
     c3.metric("Korrelation (Returns)", f"{corr:.2f}")
-    
+
     st.write("")
-    st.text(
-        f"Zeitraum-Änderung: {label_a}: {abs_a:,.2f} $ | {label_b}: {abs_b:,.2f} $"
-    )
+    st.text(f"Zeitraum-Änderung: {label_a}: {abs_a:,.2f} $ | {label_b}: {abs_b:,.2f} $")
 
     # Besseren Performer bei unterschiedlichen Assets identifizieren
     if not same_asset:
@@ -259,13 +263,19 @@ def show_asset_comparison_page():
         delta = pct_a - pct_b
 
         if abs(delta) <= tol:
-            st.info("📌 Beide Assets haben im gewählten Zeitraum **nahezu gleich** performt.")
+            st.info(
+                "📌 Beide Assets haben im gewählten Zeitraum **nahezu gleich** performt."
+            )
         elif delta > 0:
-            st.success(f"🏆 **{symbol_a}** hat im gewählten Zeitraum besser performt als **{symbol_b}** "
-                       f"({pct_a:.2f}% vs. {pct_b:.2f}%).")
+            st.success(
+                f"🏆 **{symbol_a}** hat im gewählten Zeitraum besser performt als **{symbol_b}** "
+                f"({pct_a:.2f}% vs. {pct_b:.2f}%)."
+            )
         else:
-            st.success(f"🏆 **{symbol_b}** hat im gewählten Zeitraum besser performt als **{symbol_a}** "
-                       f"({pct_b:.2f}% vs. {pct_a:.2f}%).")
+            st.success(
+                f"🏆 **{symbol_b}** hat im gewählten Zeitraum besser performt als **{symbol_a}** "
+                f"({pct_b:.2f}% vs. {pct_a:.2f}%)."
+            )
 
     st.divider()
 
@@ -278,8 +288,12 @@ def show_asset_comparison_page():
             unsafe_allow_html=True,
         )
         fig_price = go.Figure()
-        fig_price.add_trace(go.Scatter(x=df.index, y=df[label_a], mode="lines", name=label_a))
-        fig_price.add_trace(go.Scatter(x=df.index, y=df[label_b], mode="lines", name=label_b))
+        fig_price.add_trace(
+            go.Scatter(x=df.index, y=df[label_a], mode="lines", name=label_a)
+        )
+        fig_price.add_trace(
+            go.Scatter(x=df.index, y=df[label_b], mode="lines", name=label_b)
+        )
         fig_price.update_layout(template="streamlit", height=500, yaxis_title="Preis")
         st.plotly_chart(fig_price, width="stretch")
         st.caption(
@@ -300,9 +314,15 @@ def show_asset_comparison_page():
         norm = df / df.iloc[0] * 100.0
 
         fig_norm = go.Figure()
-        fig_norm.add_trace(go.Scatter(x=norm.index, y=norm[label_a], mode="lines", name=label_a))
-        fig_norm.add_trace(go.Scatter(x=norm.index, y=norm[label_b], mode="lines", name=label_b))
-        fig_norm.update_layout(template="streamlit", height=500, yaxis_title="Index (Start=100)")
+        fig_norm.add_trace(
+            go.Scatter(x=norm.index, y=norm[label_a], mode="lines", name=label_a)
+        )
+        fig_norm.add_trace(
+            go.Scatter(x=norm.index, y=norm[label_b], mode="lines", name=label_b)
+        )
+        fig_norm.update_layout(
+            template="streamlit", height=500, yaxis_title="Index (Start=100)"
+        )
         st.plotly_chart(fig_norm, width="stretch")
         st.caption(
             """Vergleich der **relativen Performance** beider Assets mit identischem Startwert (**Index = 100**).  

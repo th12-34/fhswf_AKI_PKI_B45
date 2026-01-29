@@ -1,16 +1,11 @@
 """
-Programmname: Indicators
-
 Autor: Maximilian Pfau / Gregor Schumacher
-
-Datum: 13.01.2026
 
 Beschreibung:
 Beinhaltet die Indikatoren Berechnung für die Analyse von Asset-Werten. Wird in dem asset_analyse view benötigt.
 
 Quellen:
-- Programmierung
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - https://docs.streamlit.io/develop/api-reference/caching-and-state/st.session_state
     - ChatGPT 5.2
 """
@@ -32,6 +27,7 @@ def compute_rsi(close: pd.Series, period: int = 14) -> pd.Series:
     rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
     return rsi
+
 
 def compute_bollinger_bands(
     close: pd.Series, window: int = 20, num_std: float = 2.0

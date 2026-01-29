@@ -1,8 +1,8 @@
 """
-Modul: Portfolio Calculator
 Autor: Maxim Sein
-Datum: 16.01.2026
-Beschreibung: Enthält die Logik für Finanzberechnungen, API-Abrufe (yfinance), 
+
+Beschreibung:
+Enthält die Logik für Finanzberechnungen, API-Abrufe (yfinance),
 Währungsumrechnungen und Sortierung der Bestände. Dient als Service-Layer für die Portfolio-View.
 
 Funktionsübersicht:
@@ -16,10 +16,9 @@ Funktionsübersicht:
 - get_aggregated_holdings: Gruppiert Einzelpositionen, berechnet Durchschnittskurse und Gesamtwerte (genutzt für Bestands-Tabelle).
 
 Quellen:
-- Programmierung
     - https://yfinance.yahoofinance.com/
     - https://docs.streamlit.io/
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - Gemini
 """
 
@@ -196,9 +195,7 @@ class PortfolioCalculator:
             if "Close" in raw_data:
                 data = raw_data["Close"]
             else:
-                data = (
-                    raw_data  # Fallback, falls nur 1 Ticker und keine Multi-Level-Columns
-                )
+                data = raw_data  # Fallback, falls nur 1 Ticker und keine Multi-Level-Columns
 
             # Wenn nur ein Ticker geladen wurde, ist es eine Series -> DataFrame konvertieren
             if isinstance(data, pd.Series):
@@ -279,13 +276,17 @@ class PortfolioCalculator:
             return 0.0, 0.0
 
         # Profit zu Beginn des Zeitraums
-        start_profit = hist_df['Total'].iloc[0] - hist_df['Invested'].iloc[0]
+        start_profit = hist_df["Total"].iloc[0] - hist_df["Invested"].iloc[0]
 
         # Profit am Ende (Aktuell)
         end_profit = current_total_val - current_invested_val
 
         profit_change_abs = end_profit - start_profit
-        profit_change_rel = (profit_change_abs / current_invested_val * 100) if current_invested_val != 0 else 0.0
+        profit_change_rel = (
+            (profit_change_abs / current_invested_val * 100)
+            if current_invested_val != 0
+            else 0.0
+        )
 
         return profit_change_abs, profit_change_rel
 
@@ -332,16 +333,18 @@ class PortfolioCalculator:
                 data["invested"] / data["amount"] if data["amount"] > 0 else 0.0
             )
 
-            results.append({
-                "sym": sym,
-                "name": data["name"],
-                "type": data["type"],
-                "amount": data["amount"],
-                "current_price": current_price,
-                "avg_buy_price": avg_buy_price,
-                "total_val": total_val,
-                "invested": data["invested"],
-            })
+            results.append(
+                {
+                    "sym": sym,
+                    "name": data["name"],
+                    "type": data["type"],
+                    "amount": data["amount"],
+                    "current_price": current_price,
+                    "avg_buy_price": avg_buy_price,
+                    "total_val": total_val,
+                    "invested": data["invested"],
+                }
+            )
 
         # Sortieren nach Gesamtwert absteigend
         results.sort(key=lambda x: x["total_val"], reverse=True)

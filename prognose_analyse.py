@@ -1,14 +1,9 @@
 """
-Programmname: prognose_analyse
-
 Autor: Thorben Herfeld
-
-Datum: 12.01.2026
 
 Beschreibung:
 Diese Klasse stellt Methoden bereit, um basierend auf yfinance Daten
 Empfehlungen für den Kauf oder Verkauf einer Aktie zu ermitteln.
-
 
 Quellen:
 - Programmierung
@@ -31,7 +26,7 @@ from gnews import GNews
 from google import genai
 import os
 from databaseHandler import DatabaseAdministration
-import appconfig
+import appconfig as appconfig
 import logging
 
 

@@ -1,15 +1,14 @@
 """
-Seitenname: Portfolioübersicht
 Autor: Maxim Sein, Bastian Pivarcsi
-Datum: 14.01.2026
-Beschreibung: Portfolioverwaltung Barmittel, Aktien und Wertpapiere. Überblick über Gesamtdepot.
+
+Beschreibung:
+Portfolioverwaltung Barmittel, Aktien und Wertpapiere. Überblick über Gesamtdepot.
 
 Quellen:
-- Programmierung
     - https://yfinance.yahoofinance.com/
     - https://plotly.com/python/
     - https://docs.streamlit.io/
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - Gemini
 """
 
@@ -23,7 +22,7 @@ import pandas as pd
 # Eigene Module
 from portfoliomanager import PortfolioManager
 from portfolioasset import PortfolioAsset
-from portfolio_calculator import PortfolioCalculator
+from calculations.portfolio_calculator import PortfolioCalculator
 from search import render_ticker_search
 import appconfig as config
 
@@ -80,20 +79,31 @@ def show_view_page():
         ]
 
         with st.spinner("Berechne Portfolio-Historie..."):
-            hist_df = PortfolioCalculator.calculate_portfolio_history(assets_for_calc, period, interval)
+            hist_df = PortfolioCalculator.calculate_portfolio_history(
+                assets_for_calc, period, interval
+            )
 
         # Fallback: Wenn Assets vorhanden sind (hist_series ist nicht None), aber leer (z.B. Kauf heute),
         # oder der letzte Wert 0 ist (Kauf heute, Historie endet gestern), fügen wir den aktuellen Wert hinzu.
         # Aktuellen Marktwert berechnen:
-        holdings = PortfolioCalculator.get_aggregated_holdings(manager.currentPortfolio.assets)
-        market_val = sum(h['total_val'] for h in holdings)
-        cash_val = sum(a.amount for a in manager.currentPortfolio.assets if a.type == 'cash')
+        holdings = PortfolioCalculator.get_aggregated_holdings(
+            manager.currentPortfolio.assets
+        )
+        market_val = sum(h["total_val"] for h in holdings)
+        cash_val = sum(
+            a.amount for a in manager.currentPortfolio.assets if a.type == "cash"
+        )
         total_now = market_val + cash_val
         invested_now = manager.currentPortfolio.get_total_value()
 
-        if hist_df is not None and (hist_df.empty or (hist_df['Total'].iloc[-1] == 0 and total_now > 0)):
+        if hist_df is not None and (
+            hist_df.empty or (hist_df["Total"].iloc[-1] == 0 and total_now > 0)
+        ):
             if total_now > 0:
-                now_df = pd.DataFrame({"Total": [total_now], "Invested": [invested_now]}, index=[pd.Timestamp.now()])
+                now_df = pd.DataFrame(
+                    {"Total": [total_now], "Invested": [invested_now]},
+                    index=[pd.Timestamp.now()],
+                )
                 if hist_df.empty:
                     hist_df = now_df
                 else:
@@ -103,11 +113,15 @@ def show_view_page():
             # Performance Metriken
             end_val = total_now
             invested_capital = invested_now
-            diff, pct = PortfolioCalculator.calculate_performance(invested_capital, end_val)
+            diff, pct = PortfolioCalculator.calculate_performance(
+                invested_capital, end_val
+            )
 
             # Zeitraum-Performance (Absoluter und relativer Gewinn)
-            profit_change_abs, profit_change_rel = PortfolioCalculator.calculate_period_profit(
-                hist_df, end_val, invested_capital
+            profit_change_abs, profit_change_rel = (
+                PortfolioCalculator.calculate_period_profit(
+                    hist_df, end_val, invested_capital
+                )
             )
 
             # Metrik anzeigen
@@ -129,7 +143,7 @@ def show_view_page():
             fig_hist.add_trace(
                 go.Scatter(
                     x=hist_df.index,
-                    y=hist_df['Total'],
+                    y=hist_df["Total"],
                     mode="lines" if len(hist_df) > 1 else "markers",
                     name="Portfolio Wert",
                     line=dict(color="#00CC96", width=2),
@@ -179,12 +193,23 @@ def show_view_page():
         st.subheader("Bestand")
 
         # Aggregation und Sortierung der Bestände
-        holdings_list = PortfolioCalculator.get_aggregated_holdings(manager.currentPortfolio.assets)
+        holdings_list = PortfolioCalculator.get_aggregated_holdings(
+            manager.currentPortfolio.assets
+        )
 
         if holdings_list:
 
             cols_i = st.columns([0.8, 2.0, 0.6, 0.8, 1, 1, 1.2, 1.0])
-            labels_i = ["Symbol", "Name", "Typ", "Menge", "Kurs", "Ø Kaufkurs", "Wert", "Entwicklung"]
+            labels_i = [
+                "Symbol",
+                "Name",
+                "Typ",
+                "Menge",
+                "Kurs",
+                "Ø Kaufkurs",
+                "Wert",
+                "Entwicklung",
+            ]
             for col, label in zip(cols_i, labels_i):
                 col.write(f"**{label}**")
             st.divider()
@@ -205,7 +230,9 @@ def show_view_page():
 
                 # Entwicklung berechnen
                 invested = item["invested"]
-                diff, pct = PortfolioCalculator.calculate_performance(invested, item["total_val"])
+                diff, pct = PortfolioCalculator.calculate_performance(
+                    invested, item["total_val"]
+                )
                 color = "green" if diff >= 0 else "red"
                 prefix = "+" if diff >= 0 else ""
                 c[7].markdown(f":{color}[{prefix}{pct:.2f}%]")
@@ -217,8 +244,10 @@ def show_view_page():
 
     with tab_assets:
         # Nutzung der ausgelagerten Such-Logik
-        found_symbol = render_ticker_search(key_prefix="port_add", label="Ticker-Suche (z.B. Apple, BTC)")
-        
+        found_symbol = render_ticker_search(
+            key_prefix="port_add", label="Ticker-Suche (z.B. Apple, BTC)"
+        )
+
         if found_symbol:
             data = PortfolioCalculator.fetch_live_data(found_symbol)
             if data:
@@ -271,7 +300,7 @@ def show_view_page():
                     if hist_price:
                         final_price = hist_price
                         st.number_input(
-                            "Kaufpreis in EUR (Historisch)",
+                            "Kaufpreis in EUR (Closing-Preis)",
                             value=final_price,
                             disabled=True,
                             format="%.2f",
@@ -336,9 +365,7 @@ def show_view_page():
 
             # Sortieren nach Kaufdatum absteigend (neueste oben)
             sorted_assets = sorted(
-                manager.currentPortfolio.assets,
-                key=lambda x: x.bought_at,
-                reverse=True
+                manager.currentPortfolio.assets, key=lambda x: x.bought_at, reverse=True
             )
 
             for idx, asset in enumerate(sorted_assets):

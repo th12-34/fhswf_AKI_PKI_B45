@@ -1,17 +1,12 @@
 """
-Programmname: Hauptseitenverwaltung
-
 Autor: Bastian Pivarcsi / Maximilian Pfau
-
-Datum: 13.01.2026
 
 Beschreibung:
 Zentrales Einstiegsskript für die Streamlit-Applikation. Verwaltet die Seitennavigation,
 die Authentifizierungswiederherstellung und das Layout der Topbar.
 
 Quellen:
-- Programmierung
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - https://docs.streamlit.io/develop/api-reference/navigation/st.page st.navigation
     - ChatGPT 5.2
 """
@@ -94,12 +89,20 @@ def main():
 
     pages = {
         "Recherche": [
-            st.Page(asset_analyze_page, title="Asset-Analyse", url_path="asset-analyze"),
-            st.Page(asset_comparison_page, title="Asset-Vergleich", url_path="asset-comparison"),
+            st.Page(
+                asset_analyze_page, title="Asset-Analyse", url_path="asset-analyze"
+            ),
+            st.Page(
+                asset_comparison_page,
+                title="Asset-Vergleich",
+                url_path="asset-comparison",
+            ),
         ],
         "Portfolio": [
             st.Page(portfolio_view_page, title="Übersicht", url_path="portfolio-view"),
-            st.Page(portfolios_manage_page, title="Verwaltung", url_path="portfolio-manager"),
+            st.Page(
+                portfolios_manage_page, title="Verwaltung", url_path="portfolio-manager"
+            ),
         ],
         "Profil": [
             st.Page(profile_page, title="Benutzereinstellungen", url_path="profile"),

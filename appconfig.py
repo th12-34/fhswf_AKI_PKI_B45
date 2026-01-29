@@ -1,9 +1,5 @@
 """
-Programmname: Config
-
 Autor: Bastian Pivarcsi
-
-Datum: 13.01.2026
 
 Beschreibung:
 Zentrale Konfigurationsdatei für Session-State-Keys und globale

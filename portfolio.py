@@ -1,19 +1,13 @@
 """
-Klasse: Portfolio
-
 Autor: Bastian Pivarcsi
-
-Datum: 13.01.2026
 
 Beschreibung:
 Diese Klasse repräsentiert ein Nutzer-Portfolio. Sie dient als Container für
 einzelne Assets und bietet Methoden zum Laden der Daten aus der Datenbank
 sowie zur Berechnung des Gesamtwerts aller enthaltenen Positionen.
 
-
 Quellen:
-- Programmierung
-    - Lehrbrief zur Vorlesung
+    - Lehrbrief "Python für alle"
     - https://docs.python.org/3/library/typing.html
 """
 
