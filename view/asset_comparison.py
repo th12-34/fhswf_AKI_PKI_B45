@@ -41,10 +41,22 @@ def _download_data(symbol: str, period: str, interval: str) -> pd.DataFrame:
         now = datetime.now()
         start = datetime(now.year, 1, 1)
         data = yf.download(
-            symbol, start=start, end=now, interval=interval, progress=False
+            symbol,
+            start=start,
+            end=now,
+            interval=interval,
+            progress=False,
+            auto_adjust=False,
         )
+
     else:
-        data = yf.download(symbol, period=period, interval=interval, progress=False)
+        data = yf.download(
+            symbol,
+            period=period,
+            interval=interval,
+            progress=False,
+            auto_adjust=False,
+        )
 
     if isinstance(data.columns, pd.MultiIndex):
         data.columns = data.columns.get_level_values(0)
