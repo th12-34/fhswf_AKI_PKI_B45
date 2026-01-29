@@ -40,7 +40,7 @@ def show_view_page():
     portfolios = manager.getPortfolios()
 
     if not portfolios:
-        st.title("Portfolio Bestaende")
+        st.caption("Es wurde bisher kein Portfolio angelegt.")
         return
 
     # --- 2. HEADER & PORTFOLIO-WAHL ---
