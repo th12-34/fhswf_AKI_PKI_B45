@@ -91,11 +91,14 @@ def show_profile_page():
 
         # Passwortchecks
         if pw_changed:
-            if not auth.validate_password_strength(new_password):
-                status_container.error("Passwort zu kurz (min. 6 Zeichen)!")
+            if not confirm_password:
+                status_container.error("Bitte bestätige das neue Passwort.")
                 has_error = True
             elif new_password != confirm_password:
                 status_container.error("Passwörter stimmen nicht überein!")
+                has_error = True
+            elif not auth.validate_password_strength(new_password):
+                status_container.error("Passwort zu kurz (min. 6 Zeichen)!")
                 has_error = True
             else:
                 pw_hash = db.hash_password(new_password)
