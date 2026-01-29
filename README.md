@@ -30,6 +30,7 @@ Das Projekt ist modular aufgebaut und trennt Frontend (Streamlit Views), Backend
 
 **Views (Benutzeroberfläche):**
 *   `view/dashboard.py`: Hauptansicht für Marktdaten, Charts und Indikatoren.
+*   `view/asset_comparison.py`: Ermöglicht den direkten Vergleich zweier Assets.
 *   `view/portfolio_view.py`: Detaillierte Ansicht der eigenen Portfolios inkl. Performance-Historie.
 *   `view/portfolios_manage.py`: Verwaltungsoberfläche zum Anlegen und Löschen von Portfolios.
 
@@ -130,7 +131,7 @@ Zusätzliche Steuerungs-Keys:
 ## 5. Aufgabenverteilung
 
 - **Basti:** Systemdesign, Datenbank, Portfolio-Klassen, Profile Page
-- **Gregor:** UI, Refactoring, Bollinger Bands
+- **Gregor:** Asset-Vergleich, Bollinger Bands, UI, Refactoring
 - **Max:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
 - **Maxim:** Portfolio-Optimierung: Berechnung, Verwaltung und Visualisierung, Prototyp Grundversion 
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
@@ -140,6 +141,7 @@ Zusätzliche Steuerungs-Keys:
 - https://yfinance.yahoofinance.com/
 - https://docs.streamlit.io/
 - https://plotly.com/python/
+- https://pandas.pydata.org/pandas-docs/stable/user_guide/10min.html
 - Lehrbrief zur Vorlesung
 - Google Gemini
 - Google Gemini API
