@@ -30,10 +30,10 @@ Das Projekt ist modular aufgebaut und trennt Frontend (Streamlit Views), Backend
 
 **Views (Benutzeroberfläche):**
 *   `view/asset_analyze.py`: Hauptansicht für Marktdaten, Charts und Indikatoren.
-*   `view/asset_comparison.py`: Ermöglicht den direkten Vergleich zweier Assets.
+*   `view/asset_comparison.py`: Ermöglicht den direkten Vergleich zweier Assets auf absoluter und relativer Basis.
 *   `view/portfolio_view.py`: Detaillierte Ansicht der eigenen Portfolios inkl. Performance-Historie.
 *   `view/portfolios_manage.py`: Verwaltungsoberfläche zum Anlegen und Löschen von Portfolios.
-
+*   `view/profile.py`: Verwaltungsoberfläche zum Ändern und Löschen eines Benutzerkontos.
 ---
 
 ## 2. Installation und Start
@@ -71,7 +71,7 @@ Um die Funktionalität der Anwendung zu überprüfen, können folgende Szenarien
 ### 3.1 Testfall 1: Marktanalyse & KI-Prognose
 **Ziel:** Analyse einer Aktie mittels technischer Indikatoren und KI.
 
-1.  Navigieren Sie im Menü zu **Marktanalyse**.
+1.  Navigieren Sie im Menü zu **Asset-Analyse**.
 2.  Geben Sie im Suchfeld einen Ticker ein (z. B. `AAPL` für Apple oder `BTC-EUR` für Bitcoin).
 3.  **Technische Analyse:**
     *   Überprüfen Sie den Chartverlauf.
@@ -82,7 +82,12 @@ Um die Funktionalität der Anwendung zu überprüfen, können folgende Szenarien
     *   Gleichzeitig analysiert **Google Gemini** aktuelle News und gibt eine Kauf-/Verkaufsempfehlung ("Sentiment") ab.
  
 ### 3.2 Testfall 2: Asset-Vergleich
-**Ziel:** ....
+**Ziel:** Absoluter sowie relativer Vergleich zweier Assets. 
+
+1.  Navigieren Sie im Menü zu **Asset-Vergleich**.
+2.  Geben Sie für Asset A sowie Asset B im Suchfeld einen Firmennamen, eine Aktie oder Krypto-Ticker ein (z. B. `AAPL` für Apple und `amazon` -> `AMZN` für Amazon).
+3.  In Abhängigkeit von der gewählten Betrachtungsperiode lässt sich nun die **absolute sowie relative Performance von Asset A gegenüber Asset B vergleichen**. Zudem wird der relative Bestperformer beider Assets explizit veranschaulicht.
+4.  Die Daten können bei Bedarf zu einem späteren Zeitpunkt neu geladen werden. Außerdem ist es möglich, einen Ausschnitt der verwendeten Daten einzusehen.
 
 ### 3.3 Testfall 3: Portfolio-Management (Login & Historischer Kauf)
 **Ziel:** Erstellen eines Portfolios und Simulation eines historischen Kaufs.
@@ -104,6 +109,12 @@ Um die Funktionalität der Anwendung zu überprüfen, können folgende Szenarien
     *   Das System berechnet automatisch den damaligen Kaufkurs und vergleicht ihn mit dem aktuellen Marktwert.
     *   Die Metriken "Gewinn" und "Gesamtwert" zeigen die Performance seit dem Kaufdatum an.
 
+### 3.4 Testfall 4: Benutzerverwaltung
+**Ziel:** Änderung der Benutzerdaten sowie Löschung des Benutzerkontos. 
+
+1.  Navigieren Sie im Menü zu **Benutzereinstellungen**.
+2.  In der vorliegenden View können Sie die hinterlegte E-Mail-Adresse, den Gemini-API-Key sowie Ihr Passwort ändern. Dabei werden leere Felder ignoriert und Änderungen unter Einhaltung der syntaktischen Voraussetzungen übernommen.
+3.  Bei Bedarf ist es hier zudem möglich, das erstellte Konto zu löschen. 
 ---
 
 ## 4. Technische Details
@@ -134,7 +145,7 @@ Zusätzliche Steuerungs-Keys:
 ## 5. Aufgabenverteilung
 
 - **Bastian Pivarcsi:** Systemdesign, Datenbank, Portfolio-Klassen, Profile
-- **Gregor Schumacher:** Asset-Vergleich Page, Profile, Bollinger Bands, UI, Refactoring
+- **Gregor A. D. Schumacher:** Asset-Vergleich, Profile, Bollinger Bands, UI, Refactoring
 - **Maximilian Pfau:** Indikatoren (MA, RSI, MACD), Sidebar, Layout, Authentifizierung
 - **Maxim Sein :** Portfolio-Optimierung: Berechnung, Verwaltung und Visualisierung, Prototyp Grundversion 
 - **Thorben Herfeld:** Prognose & Analyse, Streamlit-Integration, Architektur
