@@ -18,6 +18,7 @@ Quellen:
 
 import streamlit as st
 from topbar import render_topbar
+from view.asset_comparison import show_asset_comparison_page
 from view.dashboard import show_dashboard
 from view.portfolio_view import show_view_page
 from view.portfolios_manage import show_manage_page
@@ -58,6 +59,12 @@ def dashboard_page():
     show_dashboard()
 
 
+def asset_comparison_page():
+    st.session_state["page_key"] = "Asset-Vergleich"
+    render_topbar()
+    show_asset_comparison_page()
+
+
 def portfolios_manage_page():
     st.session_state["page_key"] = "Portfolioverwaltung"
     render_topbar()
@@ -88,6 +95,7 @@ def main():
     pages = {
         "Recherche": [
             st.Page(dashboard_page, title="Marktanalyse", url_path="dashboard"),
+            st.Page(asset_comparison_page, title="Asset-Vergleich", url_path="asset-comparison"),
         ],
         "Portfolio": [
             st.Page(portfolio_view_page, title="Übersicht", url_path="portfolio-view"),
